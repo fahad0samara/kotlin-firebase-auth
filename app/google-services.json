@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "862063487874",
+    "project_id": "booo-f86a4",
+    "storage_bucket": "booo-f86a4.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:862063487874:android:06078e6bd2e70ffe29fd9b",
+        "android_client_info": {
+          "package_name": "com.fahad.auth_firebase"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAKl_w6_rocT7WvsNoRGGMPyVHaIJxdTWE"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

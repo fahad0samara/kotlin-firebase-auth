@@ -1,8 +1,6 @@
-package com.fahad.auth_firebase.ui
 
-import android.os.Bundle
-import androidx.activity.ComponentActivity
-import androidx.activity.compose.setContent
+package com.fahad.auth_firebase.ui.screen
+
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -10,73 +8,34 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
-import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.hilt.navigation.compose.hiltViewModel
 import com.fahad.auth_firebase.domain.model.Response
-import com.fahad.auth_firebase.ui.screen.RegisterUserScreen
-import com.fahad.auth_firebase.ui.screen.RegisterUserViewModel
-import com.fahad.auth_firebase.ui.screen.SignInViewModel
-import com.fahad.auth_firebase.ui.ui.theme.AuthfirebaseTheme
-import dagger.hilt.android.AndroidEntryPoint
 
-
-@AndroidEntryPoint
-@ExperimentalComposeUiApi
-class MainActivity : ComponentActivity() {
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-
-        setContent {
-       val registerUserViewModel: RegisterUserViewModel = hiltViewModel()
-            val signInViewModel: SignInViewModel = hiltViewModel()
-            AuthfirebaseTheme {
-                // A surface container using the 'background' color from the theme
-                Surface(
-                    modifier = Modifier.fillMaxSize(),
-                    color = MaterialTheme.colorScheme.background
-                ) {
-                    SignInScreen(
-                        viewModel = signInViewModel,
-                        onSignInComplete = {}
-                    )
-
-
-                }
-            }
-        }
-    }
-}
 @Composable
-fun SignInScreen(
-    viewModel: SignInViewModel,
-    onSignInComplete: () -> Unit
+fun RegisterUserScreen(
+    viewModel: RegisterUserViewModel,
+    onRegistrationComplete: () -> Unit
 ) {
     val email by viewModel.email.collectAsState()
     val password by viewModel.password.collectAsState()
-    val loginResponse by viewModel.loginResponse.collectAsState(
-        initial = Response.Loading
-    )
+    val confirmPassword by viewModel.confirmPassword.collectAsState()
+    val registrationResponse by viewModel.registrationResponse.collectAsState()
 
     Column(
         modifier = Modifier
@@ -86,7 +45,7 @@ fun SignInScreen(
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Text(
-            text = "Sign In",
+            text = "Register User",
             style = TextStyle(fontWeight = FontWeight.Bold, fontSize = 20.sp)
         )
         Spacer(modifier = Modifier.height(16.dp))
@@ -110,32 +69,38 @@ fun SignInScreen(
             visualTransformation = PasswordVisualTransformation(),
             modifier = Modifier.fillMaxWidth()
         )
+        Spacer(modifier = Modifier.height(8.dp))
+        OutlinedTextField(
+            value = confirmPassword,
+            onValueChange = { viewModel.setConfirmPassword(it) },
+            label = { Text("Confirm Password") },
+            keyboardOptions = KeyboardOptions(
+                keyboardType = KeyboardType.Password
+            ),
+            visualTransformation = PasswordVisualTransformation(),
+            modifier = Modifier.fillMaxWidth()
+        )
         Spacer(modifier = Modifier.height(16.dp))
         Button(
-            onClick = { viewModel.login() },
+            onClick = { viewModel.registerUser() },
             modifier = Modifier.fillMaxWidth()
         ) {
-            Text(text = "Sign In")
+            Text(text = "Register")
         }
         Spacer(modifier = Modifier.height(16.dp))
-        when (loginResponse) {
+        when (registrationResponse) {
             is Response.Success -> {
-                onSignInComplete()
+                onRegistrationComplete()
             }
+
             is Response.Failure -> {
-                val errorText = when ((loginResponse as Response.Failure).e.message) {
-                    "Invalid email address" -> "Invalid email address. Please check your email."
-                    "Invalid password" -> "Invalid password. Please check your password."
-                    "User not found" -> "User not found. Please check your credentials."
-                    else -> "Authentication failed: ${(loginResponse as Response.Failure).e.message}"
-                }
                 Text(
-                    text = errorText,
+                    text = "Registration failed: ${(registrationResponse as Response.Failure).e.message}",
                     color = Color.Red
                 )
             }
 
-                is Response.Loading -> {
+            is Response.Loading -> {
                 CircularProgressIndicator()
             }
         }
