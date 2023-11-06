@@ -10,7 +10,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
@@ -29,14 +28,13 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.fahad.auth_firebase.domain.model.Response
-import com.fahad.auth_firebase.ui.screen.RegisterUserScreen
-import com.fahad.auth_firebase.ui.screen.RegisterUserViewModel
+import com.fahad.auth_firebase.ui.screen.register.RegisterUserViewModel
 import com.fahad.auth_firebase.ui.screen.SignInViewModel
+import com.fahad.auth_firebase.ui.screen.register.RegisterUserScreen
 import com.fahad.auth_firebase.ui.ui.theme.AuthfirebaseTheme
 import dagger.hilt.android.AndroidEntryPoint
 
@@ -56,9 +54,8 @@ class MainActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
-                    SignInScreen(
-                        viewModel = signInViewModel,
-                        onSignInComplete = {}
+                    RegisterUserScreen(
+                        viewModel = registerUserViewModel
                     )
 
 

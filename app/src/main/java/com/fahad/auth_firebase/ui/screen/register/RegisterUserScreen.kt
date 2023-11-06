@@ -1,5 +1,5 @@
 
-package com.fahad.auth_firebase.ui.screen
+package com.fahad.auth_firebase.ui.screen.register
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -16,6 +16,9 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -25,17 +28,18 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.fahad.auth_firebase.domain.model.Response
 
 @Composable
 fun RegisterUserScreen(
-    viewModel: RegisterUserViewModel,
-    onRegistrationComplete: () -> Unit
+    viewModel: RegisterUserViewModel
 ) {
-    val email by viewModel.email.collectAsState()
-    val password by viewModel.password.collectAsState()
-    val confirmPassword by viewModel.confirmPassword.collectAsState()
-    val registrationResponse by viewModel.registrationResponse.collectAsState()
+    val emailState by viewModel.emailState.collectAsState()
+    val passwordState by viewModel.passwordState.collectAsState()
+    val confirmPasswordState by viewModel.confirmPasswordState.collectAsState()
+    val registrationResult by viewModel.registrationResult.collectAsState()
+    val emailErrorState by viewModel.emailError.collectAsState()
+    val passwordErrorState by viewModel.passwordError.collectAsState()
+    val emailInUseErrorState by viewModel.emailInUseError.collectAsState()
 
     Column(
         modifier = Modifier
@@ -50,7 +54,7 @@ fun RegisterUserScreen(
         )
         Spacer(modifier = Modifier.height(16.dp))
         OutlinedTextField(
-            value = email,
+            value = emailState,
             onValueChange = { viewModel.setEmail(it) },
             label = { Text("Email") },
             keyboardOptions = KeyboardOptions(
@@ -58,9 +62,19 @@ fun RegisterUserScreen(
             ),
             modifier = Modifier.fillMaxWidth()
         )
+
+        // Display email error message if it exists
+        if (emailErrorState != null) {
+            Text(
+                text = emailErrorState!!,
+                color = Color.Red,
+                modifier = Modifier.padding(start = 8.dp)
+            )
+        }
         Spacer(modifier = Modifier.height(8.dp))
+
         OutlinedTextField(
-            value = password,
+            value = passwordState,
             onValueChange = { viewModel.setPassword(it) },
             label = { Text("Password") },
             keyboardOptions = KeyboardOptions(
@@ -69,9 +83,19 @@ fun RegisterUserScreen(
             visualTransformation = PasswordVisualTransformation(),
             modifier = Modifier.fillMaxWidth()
         )
+
+        // Display password error message if it exists
+        if (passwordErrorState != null) {
+            Text(
+                text = passwordErrorState!!,
+                color = Color.Red,
+                modifier = Modifier.padding(start = 8.dp)
+            )
+        }
         Spacer(modifier = Modifier.height(8.dp))
+
         OutlinedTextField(
-            value = confirmPassword,
+            value = confirmPasswordState,
             onValueChange = { viewModel.setConfirmPassword(it) },
             label = { Text("Confirm Password") },
             keyboardOptions = KeyboardOptions(
@@ -80,6 +104,7 @@ fun RegisterUserScreen(
             visualTransformation = PasswordVisualTransformation(),
             modifier = Modifier.fillMaxWidth()
         )
+
         Spacer(modifier = Modifier.height(16.dp))
         Button(
             onClick = { viewModel.registerUser() },
@@ -88,23 +113,31 @@ fun RegisterUserScreen(
             Text(text = "Register")
         }
         Spacer(modifier = Modifier.height(16.dp))
-        when (registrationResponse) {
-            is Response.Success -> {
-                onRegistrationComplete()
-            }
 
-            is Response.Failure -> {
-                Text(
-                    text = "Registration failed: ${(registrationResponse as Response.Failure).e.message}",
-                    color = Color.Red
-                )
-            }
+        // Display registration error if it exists
+        if (registrationResult is RegistrationResult.Failure) {
+            Text(
+                text = "Registration failed: ${(registrationResult as RegistrationResult.Failure).errorMessage}",
+                color = Color.Red
+            )
+        }
 
-            is Response.Loading -> {
-                CircularProgressIndicator()
-            }
+        // Display email in use error if it exists
+        if (emailInUseErrorState != null) {
+            Text(
+                text = emailInUseErrorState!!,
+                color = Color.Red
+            )
+        }
+
+        // Display loading indicator
+        if (registrationResult is RegistrationResult.Loading) {
+            CircularProgressIndicator()
         }
     }
 }
+
+
+
 
 
