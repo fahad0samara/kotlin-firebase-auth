@@ -1,4 +1,4 @@
-package com.fahad.auth_firebase.ui.theme
+package com.fahad.auth_firebase.ui.ui.theme
 
 import android.app.Activity
 import android.os.Build

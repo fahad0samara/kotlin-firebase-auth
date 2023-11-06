@@ -1,4 +1,4 @@
-package com.fahad.auth_firebase.ui.theme
+package com.fahad.auth_firebase.ui.ui.theme
 
 import androidx.compose.ui.graphics.Color
 
