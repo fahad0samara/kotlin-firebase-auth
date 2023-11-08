@@ -8,10 +8,10 @@
             <InsightsFilterSettings>
               <option name="connection">
                 <ConnectionSetting>
-                  <option name="appId" value="PLACEHOLDER" />
-                  <option name="mobileSdkAppId" value="" />
-                  <option name="projectId" value="" />
-                  <option name="projectNumber" value="" />
+                  <option name="appId" value="com.fahad.auth_firebase" />
+                  <option name="mobileSdkAppId" value="1:862063487874:android:06078e6bd2e70ffe29fd9b" />
+                  <option name="projectId" value="booo-f86a4" />
+                  <option name="projectNumber" value="862063487874" />
                 </ConnectionSetting>
               </option>
               <option name="signal" value="SIGNAL_UNSPECIFIED" />
