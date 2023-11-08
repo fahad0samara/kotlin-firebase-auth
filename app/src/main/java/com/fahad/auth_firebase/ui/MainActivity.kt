@@ -32,6 +32,8 @@ import androidx.navigation.NavController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import com.fahad.auth_firebase.ui.screen.login.LoginScreen
+import com.fahad.auth_firebase.ui.screen.login.LoginViewModel
 
 import com.fahad.auth_firebase.ui.screen.register.RegisterScreen
 import com.fahad.auth_firebase.ui.screen.register.RegisterViewModel
@@ -75,11 +77,19 @@ class MainActivity : ComponentActivity() {
 fun MainScreen() {
     val navController = rememberNavController()
     val registerViewModel: RegisterViewModel = hiltViewModel()
+    val loginViewModel: LoginViewModel = hiltViewModel()
+
 
     NavHost(
         navController = navController,
-        startDestination = "register"
+        startDestination = "login"
     ) {
+        composable("login") {
+            LoginScreen(navController = navController,
+                loginViewModel = loginViewModel
+            )
+
+        }
         composable("register") {
             RegisterScreen(navController = navController,
                 registerViewModel = registerViewModel

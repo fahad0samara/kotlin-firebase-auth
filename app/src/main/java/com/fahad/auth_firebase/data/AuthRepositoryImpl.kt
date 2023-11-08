@@ -3,8 +3,11 @@ package com.fahad.auth_firebase.data
 import com.fahad.auth_firebase.domain.model.Response
 import com.fahad.auth_firebase.domain.model.User
 import com.fahad.auth_firebase.domain.repository.AuthRepository
+import com.fahad.auth_firebase.util.Button.validateEmailAndPassword
 import com.google.firebase.Firebase
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.auth.FirebaseAuthInvalidCredentialsException
+import com.google.firebase.auth.FirebaseAuthInvalidUserException
 import com.google.firebase.auth.FirebaseAuthUserCollisionException
 import com.google.firebase.auth.auth
 import kotlinx.coroutines.Dispatchers
@@ -23,10 +26,14 @@ class AuthRepositoryImpl @Inject constructor() : AuthRepository {
     override suspend fun registerUser(
         email: String, password: String,
         displayName: String): Flow<Response<User>> = flow {
+        val validationResponse = validateEmailAndPassword(email, password)
+        if (validationResponse is Response.Failure) {
+            emit(validationResponse)
+            return@flow
+        }
         try {
-            if (password.length < 6) {
-                emit(Response.Failure(Exception("Password must be at least 6 characters")))
-            } else {
+
+
                 auth.createUserWithEmailAndPassword(email, password).await()
                 emit(
                     Response.Success(
@@ -38,9 +45,29 @@ class AuthRepositoryImpl @Inject constructor() : AuthRepository {
                         )
                     )
                 )
-            }
+
         } catch (e: FirebaseAuthUserCollisionException) {
             emit(Response.Failure(Exception("The email address is already in use by another account.")))
+        } catch (e: Exception) {
+            emit(Response.Failure(e))
+        }
+    }.flowOn(Dispatchers.IO)
+
+    override suspend fun loginUser(email: String, password: String): Flow<Response<User>> = flow {
+        try {
+            auth.signInWithEmailAndPassword(email, password).await()
+            val user = User(
+                uid = auth.currentUser?.uid ?: "",
+                email = auth.currentUser?.email ?: "",
+                displayName = auth.currentUser?.displayName ?: "",
+                photoUrl = auth.currentUser?.photoUrl.toString()
+            )
+            emit(Response.Success(user))
+        } catch (e: FirebaseAuthInvalidUserException) {
+            emit(Response.Failure(Exception("User not found")))
+        } catch (e: FirebaseAuthInvalidCredentialsException) {
+            emit(Response.Failure(Exception("Invalid credentials"))
+            )
         } catch (e: Exception) {
             emit(Response.Failure(e))
         }

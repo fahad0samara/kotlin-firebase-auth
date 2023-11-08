@@ -1,7 +1,9 @@
 package com.fahad.auth_firebase.ui.screen.register
 
+import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import androidx.navigation.NavController
 import com.fahad.auth_firebase.domain.model.Response
 import com.fahad.auth_firebase.domain.model.User
 import com.fahad.auth_firebase.domain.repository.AuthRepository
@@ -22,14 +24,25 @@ class RegisterViewModel @Inject constructor(private val repository: AuthReposito
     private val _displayName = MutableStateFlow<String>("") // Store the display name
     val displayName: StateFlow<String> = _displayName
 
-    fun registerUser(email: String, password: String, displayName: String) {
+    private val _isLoading = mutableStateOf(false)
+
+    val isLoading:Boolean
+        get() = _isLoading.value
+
+    fun registerUser(email: String, password: String, displayName: String,navController: NavController) {
+        _isLoading.value = true
         viewModelScope.launch {
             _registrationState.value = Response.Loading
             val registrationResult = repository.registerUser(email, password, displayName).first()
+            _isLoading.value = false
             if (registrationResult is Response.Success) {
                 // Registration successful, update the display name
                 _displayName.value = displayName
+                navController.navigate("success")
             }
+
+
+
             _registrationState.value = registrationResult
         }
     }

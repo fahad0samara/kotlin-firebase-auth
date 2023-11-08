@@ -9,7 +9,6 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -22,7 +21,6 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.fahad.auth_firebase.domain.model.Response
-
 import com.fahad.auth_firebase.util.Button.LoadingButton
 
 @Composable
@@ -34,7 +32,7 @@ fun RegisterScreen(
     var password by remember { mutableStateOf("") }
     var name by remember { mutableStateOf("") }
     val registrationResult by registerViewModel.registrationState.collectAsState()
-    var isRegistering by remember { mutableStateOf(false) }
+
 
     println(
         "RegisterScreen: registrationResult = $registrationResult"
@@ -92,15 +90,7 @@ fun RegisterScreen(
         )
 
 
-        // Use LaunchedEffect to reset isRegistering when registrationResult changes
-        LaunchedEffect(registrationResult) {
-            if (registrationResult is Response.Failure) {
-                isRegistering = false
-            } else if (registrationResult is Response.Success) {
-                // Registration successful, navigate to the home screen
-                navController.navigate("success")
-            }
-        }
+
 
         // Display error message if registrationResult is a failure
         if (registrationResult is Response.Failure) {
@@ -113,9 +103,9 @@ fun RegisterScreen(
         }
 
         // Register Button
-        LoadingButton(text = "Register", isLoading = isRegistering, onClick = {
-            isRegistering = true
-            registerViewModel.registerUser(email, password, name)
+        LoadingButton(text = "Register", isLoading = registerViewModel.isLoading, onClick = {
+
+            registerViewModel.registerUser(email, password, name, navController)
         })
 
 
