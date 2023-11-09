@@ -95,10 +95,20 @@ dependencies {
     implementation("com.google.firebase:firebase-analytics-ktx")
 implementation("com.google.firebase:firebase-auth-ktx")
 
+    //phothoView
+    implementation ("io.coil-kt:coil-compose:2.4.0")
+
+
+
+
 
 }
 
 // Allow references to generated code
 kapt {
     correctErrorTypes = true
+    javacOptions {
+        option("-Xmaxerrs", 500)
+    }
+
 }

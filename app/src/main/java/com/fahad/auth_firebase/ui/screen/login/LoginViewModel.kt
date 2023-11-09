@@ -7,6 +7,7 @@ import androidx.navigation.NavController
 import com.fahad.auth_firebase.domain.model.Response
 import com.fahad.auth_firebase.domain.model.User
 import com.fahad.auth_firebase.domain.repository.AuthRepository
+import com.fahad.auth_firebase.ui.UserDataViewModel
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -16,7 +17,9 @@ import javax.inject.Inject
 
 
 @HiltViewModel
-class LoginViewModel @Inject constructor(private val repository: AuthRepository) : ViewModel() {
+class LoginViewModel @Inject constructor(private val repository: AuthRepository,
+                                            private val userDataViewModel: UserDataViewModel
+    ) : ViewModel() {
     private val _loginState = MutableStateFlow<Response<User>>(Response.Loading)
     val loginState: StateFlow<Response<User>> = _loginState
     private val _isLoading = mutableStateOf(false)
@@ -32,9 +35,14 @@ class LoginViewModel @Inject constructor(private val repository: AuthRepository)
 
 
             if (loginResult is Response.Success) {
-                // Login was successful, navigate to the home screen
+                // Login successful, update the user in the ViewModel
+                val user = loginResult.data
+
+                userDataViewModel.setUser(user)
                 navController.navigate("success")
             }
+
+
         }
     }
 }

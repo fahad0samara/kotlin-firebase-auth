@@ -35,6 +35,8 @@ fun LoginScreen(
 
     val loginResult by loginViewModel.loginState.collectAsState()
 
+    println("Register: loginResult = $loginResult")
+
 
 
     Column(

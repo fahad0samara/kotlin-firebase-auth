@@ -24,6 +24,8 @@ fun validateEmailAndPassword(email: String, password: String): Response<Unit> {
         return Response.Failure(Exception("Password should contain at least one uppercase letter"))
     }
 
+
+
     return Response.Success(Unit)
 }
 
