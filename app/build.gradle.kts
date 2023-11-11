@@ -65,6 +65,7 @@ dependencies {
     implementation(libs.ui.graphics)
     implementation(libs.ui.tooling.preview)
     implementation(libs.material3)
+    implementation(libs.firebase.storage.ktx)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.test.ext.junit)
     androidTestImplementation(libs.espresso.core)
@@ -94,9 +95,11 @@ dependencies {
     implementation(platform("com.google.firebase:firebase-bom:32.5.0"))
     implementation("com.google.firebase:firebase-analytics-ktx")
 implementation("com.google.firebase:firebase-auth-ktx")
+implementation("com.google.firebase:firebase-storage-ktx")
+
 
     //phothoView
-    implementation ("io.coil-kt:coil-compose:2.4.0")
+    implementation (libs.coil.compose)
 
 
 

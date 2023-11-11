@@ -128,19 +128,9 @@ private fun checkAuthenticationState(navController: NavController, userDataViewM
     val currentUser = auth.currentUser
 
     if (currentUser != null) {
-        val userData = userDataViewModel.user.value
+        // Get user data from Firebase
+        userDataViewModel.getUserData()
 
-        if (userData == null || userData.uid.isEmpty()) {
-            // Fetch user data and update the UserDataViewModel
-            userDataViewModel.setUser(
-                User(
-                    uid = currentUser.uid,
-                    email = currentUser.email ?: "",
-                    displayName = currentUser.displayName ?: "",
-                    photoUrl = currentUser.photoUrl?.toString() ?: ""
-                )
-            )
-        }
 
         // Navigate to the success screen
         navController.navigate("success") {
@@ -153,6 +143,7 @@ private fun checkAuthenticationState(navController: NavController, userDataViewM
         }
     }
 }
+
 
 
 

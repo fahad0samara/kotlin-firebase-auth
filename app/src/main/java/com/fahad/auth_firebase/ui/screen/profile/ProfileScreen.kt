@@ -25,10 +25,16 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
+import coil.compose.AsyncImagePainter.State.Empty.painter
 import coil.compose.rememberAsyncImagePainter
+import coil.compose.rememberImagePainter
+import coil.request.ImageRequest
+import com.fahad.auth_firebase.R
 
 
 import com.fahad.auth_firebase.ui.UserDataViewModel
@@ -47,6 +53,7 @@ fun ProfileScreen(
     val displayName = user?.displayName
     val email = user?.email
     val photoUrl = user?.photoUrl
+Log.d("photoUrl", "photoUrl: $photoUrl")
 
     Log.d("user", "displayName: $user")
 
@@ -82,20 +89,30 @@ fun ProfileScreen(
                     .border(2.dp, MaterialTheme.colorScheme.primary, CircleShape)
                     .padding(vertical = 16.dp)
             ) {
-                // Display the user's image or a placeholder using Coil's Image
                 Image(
-                    painter = rememberAsyncImagePainter(photoUrl),
-
-
-                    contentDescription = "User's photo",
+                    painter = // Placeholder image resource
+                    rememberAsyncImagePainter(ImageRequest.Builder // Error image resource
+                        (LocalContext.current).data(data = photoUrl).apply(block = fun ImageRequest.Builder.() {
+                        placeholder(R.drawable.ic_launcher_background) // Placeholder image resource
+                        error(R.drawable.ic_launcher_background) // Error image resource
+                        crossfade(true)
+                    }).build()
+                    ),
+                    contentDescription = "User Image",
                     modifier = Modifier
                         .size(120.dp)
                         .clip(CircleShape)
-                        .border(1.dp, Color.Black, CircleShape)
+                        .border(2.dp, MaterialTheme.colorScheme.primary, CircleShape)
+                        .padding(vertical = 16.dp)
                 )
             }
 
-            // Edit Profile Button
+
+
+
+
+
+                // Edit Profile Button
             Button(
                 onClick = { /* Navigate to the edit profile screen */
                     navController.navigate("edit_profile")

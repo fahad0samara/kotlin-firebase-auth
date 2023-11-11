@@ -1,6 +1,5 @@
 package com.fahad.auth_firebase.ui.screen.register
 
-import android.net.Uri
 import android.util.Log
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
@@ -31,7 +30,7 @@ class RegisterViewModel @Inject constructor(
 
 
     fun registerUser(
-        email: String, password: String, displayName: String, photoUrl: String?, // Make it nullable
+        email: String, password: String, displayName: String, photoUri: String, // Make it nullable
         navController: NavController
     ) {
         _isLoading.value = true
@@ -39,7 +38,7 @@ class RegisterViewModel @Inject constructor(
             _registrationState.value = Response.Loading
             try {
                 val registrationResult = repository.registerUser(
-                    email, password, displayName, photoUrl.orEmpty()
+                    email, password, displayName, photoUri
                 ).first()
                 _isLoading.value = false
 
