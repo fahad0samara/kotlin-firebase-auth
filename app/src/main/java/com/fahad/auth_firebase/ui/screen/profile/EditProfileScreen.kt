@@ -4,6 +4,7 @@ import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -13,11 +14,15 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
@@ -32,10 +37,13 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import coil.compose.rememberAsyncImagePainter
+import coil.compose.rememberImagePainter
 import coil.request.ImageRequest
 import com.fahad.auth_firebase.R
 import com.fahad.auth_firebase.ui.UserDataViewModel
@@ -48,11 +56,11 @@ fun EditProfileScreen(
     navController: NavController,
     userDataViewModel: UserDataViewModel
 ) {
-    var displayName by rememberSaveable { mutableStateOf(userDataViewModel.user.value?.displayName ?: "") }
+    var displayName by rememberSaveable {
+        mutableStateOf(userDataViewModel.user.value?.displayName ?: "")
+    }
     var photoUri by rememberSaveable {
-        mutableStateOf<Uri?>(
-            userDataViewModel.user.value?.photoUrl?.let { Uri.parse(it) }
-        )
+        mutableStateOf<Uri?>(userDataViewModel.user.value?.photoUrl?.let { Uri.parse(it) })
     }
     val user = userDataViewModel.user.collectAsState().value
     val error = userDataViewModel.error.collectAsState().value
@@ -65,82 +73,110 @@ fun EditProfileScreen(
         photoUri = uri
     }
 
-
-
-    // Rest of your UI
-    Column(
+    Box(
         modifier = Modifier
             .fillMaxSize()
+            .padding(10.dp)
+            .background(MaterialTheme.colorScheme.background)
+            .border(2.dp, Color.Gray, shape = RoundedCornerShape(16.dp))
             .padding(16.dp),
-        verticalArrangement = Arrangement.Center,
-        horizontalAlignment = Alignment.CenterHorizontally
+        contentAlignment = Alignment.TopStart
     ) {
-        // Display the selected image or show an icon
-        Box(
-            modifier = Modifier.fillMaxWidth(),
-            contentAlignment = Alignment.Center
+        // Cancel Button
+        IconButton(
+            onClick = { navController.popBackStack() },
+            modifier = Modifier
+                .padding(8.dp)
+                .background(
+                    color = MaterialTheme.colorScheme.secondary,
+                    shape = CircleShape
+                )
         ) {
-            Image(
-                painter = rememberAsyncImagePainter(
-                    ImageRequest.Builder(LocalContext.current).data(photoUri).apply {
-                        placeholder(R.drawable.ic_launcher_background)
-                        error(R.drawable.ic_launcher_foreground)
-                        crossfade(true)
-                    }.build()
-                ),
-                contentDescription = "User Image",
-                modifier = Modifier
-                    .size(200.dp)
-                    .clip(CircleShape)
-                    .padding(vertical = 16.dp)
+            Icon(
+                imageVector = Icons.Default.ArrowBack,
+                contentDescription = "Back",
+                tint = Color.White
             )
         }
 
-        // Button to open the image picker
-        Button(
-            onClick = { launcher.launch("image/*") },
-            modifier = Modifier.padding(16.dp)
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(top = 56.dp), // Adjusted top padding to make space for the back button
+            verticalArrangement = Arrangement.Center,
+            horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Text("Select Photo")
+            // Display the selected image or show an icon with background
+            Box(
+                modifier = Modifier
+                    .size(200.dp)
+                    .clip(CircleShape)
+                    .background(MaterialTheme.colorScheme.primary)
+                    .border(2.dp, Color.White, CircleShape)
+                    .padding(5.dp)
+            ) {
+                Image(
+                    painter = rememberAsyncImagePainter(model = photoUri),
+                    contentDescription = "User Image",
+                    modifier = Modifier
+                        .size(250.dp)
+                        .clip(CircleShape),
+                    alignment = Alignment.Center,
+                    contentScale = ContentScale.FillWidth
+
+
+                )
+            }
+
+            // Button to open the image picker
+            Button(
+                onClick = { launcher.launch("image/*") },
+                modifier = Modifier
+                    .padding(16.dp)
+                    .fillMaxWidth(),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = MaterialTheme.colorScheme.secondary,
+                    contentColor = Color.White
+                )
+            ) {
+                Text("Change Image")
+            }
+
+            // Display Name Input
+            OutlinedTextField(
+                value = displayName,
+                onValueChange = { displayName = it },
+                label = { Text("Display Name") },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 16.dp)
+            )
+
+            // LoadingButton
+            LoadingButton(
+                text = "Save Changes",
+                isLoading = isLoading,
+                enabled = !(photoUri == null || displayName.isBlank()),
+                onClick = {
+                    photoUri?.let { uri ->
+                        userDataViewModel.updateUserProfile(
+                            displayName, uri, navController
+                        )
+                    }
+                },
+            )
         }
 
-        // Display Name Input
-        OutlinedTextField(
-            value = displayName,
-            onValueChange = { displayName = it },
-            label = { Text("Display Name") },
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(0.dp, 16.dp, 0.dp, 16.dp)
+        SnackbarWrapper(
+            error = error,
+            success = success,
+            onDismiss = {
+                userDataViewModel.clearError()
+                userDataViewModel.clearSuccess()
+            }
         )
-        //LoadingButton
-        LoadingButton(
-            text="Save Changes",
-            isLoading= isLoading,
-            onClick = {
-                photoUri?.let { uri ->
-                    userDataViewModel.updateUserProfile(
-                        displayName,
-                        uri,
-                        navController
-
-                    )
-                }
-            },
-        )
-
-
-
-
     }
-
-    SnackbarWrapper(
-        error = error,
-        success = success,
-        onDismiss = { userDataViewModel.clearError(); userDataViewModel.clearSuccess() }
-    )
-
-
-
 }
+
+
 

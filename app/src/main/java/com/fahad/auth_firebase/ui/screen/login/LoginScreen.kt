@@ -87,10 +87,15 @@ fun LoginScreen(
 
 
     // Login Button
-    LoadingButton(text = "Login", isLoading = loginViewModel.isLoading) {
-        loginViewModel.login(email, password, navController)
+    LoadingButton(text = "Login", isLoading = loginViewModel.isLoading,
+        onClick = {
+            loginViewModel.login(email, password, navController)
+        },
+        )
 
-    }
+
+
+
 
     // Navigation button to registration screen
     TextButton(

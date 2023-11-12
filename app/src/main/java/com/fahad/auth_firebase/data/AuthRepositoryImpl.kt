@@ -5,23 +5,22 @@ import android.util.Log
 import com.fahad.auth_firebase.domain.model.Response
 import com.fahad.auth_firebase.domain.model.User
 import com.fahad.auth_firebase.domain.repository.AuthRepository
-import com.fahad.auth_firebase.util.Button.validateEmailAndPassword
+import com.fahad.auth_firebase.util.valid.validateEmailAndPassword
 import com.google.firebase.Firebase
 import com.google.firebase.auth.FirebaseAuthUserCollisionException
 import com.google.firebase.auth.UserProfileChangeRequest
 import com.google.firebase.auth.auth
 import com.google.firebase.storage.FirebaseStorage
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOn
 
 import kotlinx.coroutines.flow.single
 import kotlinx.coroutines.tasks.await
-import java.net.URL
 import javax.inject.Inject
 import javax.inject.Singleton
-import kotlin.math.log
 
 @Singleton
 class AuthRepositoryImpl @Inject constructor() : AuthRepository {
@@ -42,6 +41,7 @@ class AuthRepositoryImpl @Inject constructor() : AuthRepository {
 
             // Upload the image to Firebase Storage
             val uploadedPhotoUrl = uploadImageToFirebaseStorage(Uri.parse(photoUri))
+            // Send email verification
 
 
             // After successful registration, set the display name and photo URL
@@ -49,7 +49,7 @@ class AuthRepositoryImpl @Inject constructor() : AuthRepository {
             val profileUpdates = UserProfileChangeRequest.Builder().setDisplayName(displayName)
                 .setPhotoUri(Uri.parse(uploadedPhotoUrl)).build()
             user?.updateProfile(profileUpdates)?.await()
-            Log.d("uploadedPhotoUrl", "uploadedPhotoUrl: $uploadedPhotoUrl")
+            user?.sendEmailVerification()?.await()
             // Fetch the latest user data from Firebase
             val updatedUser = getUserDataFromFirebase()
             emit(Response.Success(updatedUser))
@@ -85,9 +85,6 @@ class AuthRepositoryImpl @Inject constructor() : AuthRepository {
     }.flowOn(Dispatchers.IO)
 
 
-
-
-
     private suspend fun uploadImageToFirebaseStorage(photoUri: Uri): String {
         return try {
             // Create a reference to the image file in Firebase Storage
@@ -115,13 +112,9 @@ class AuthRepositoryImpl @Inject constructor() : AuthRepository {
         val email = firebaseUser.email ?: ""
         val displayName = firebaseUser.displayName ?: ""
         val photoUrl = downloadImageFromFirebaseStorage(firebaseUser.photoUrl?.toString() ?: "")
+        val isEmailVerified = firebaseUser.isEmailVerified
 
-
-
-
-        return User(uid, email, displayName, photoUrl)
-
-
+        return User(uid, email, displayName, photoUrl, isEmailVerified)
     }
 
 
@@ -149,6 +142,7 @@ class AuthRepositoryImpl @Inject constructor() : AuthRepository {
         try {
             val user = getUserDataFromFirebase()
             emit(Response.Success(user))
+            Log.d("response", "getUserData: $user")
         } catch (e: Exception) {
             emit(Response.Failure(e))
         }
@@ -157,11 +151,14 @@ class AuthRepositoryImpl @Inject constructor() : AuthRepository {
     // In AuthRepository
 
     override suspend fun updateUserProfile(
-        uid: String,
-        displayName: String,
-        photoUri: String
+        uid: String, displayName: String, photoUri: String
     ): Response<User> = flow {
         try {
+            if (displayName.isBlank()) {
+                emit(Response.Failure(Exception("Display name cannot be empty")))
+                return@flow
+            }
+
             // Fetch the current user's data
             val currentUser = getUserDataFromFirebase()
 
@@ -171,14 +168,15 @@ class AuthRepositoryImpl @Inject constructor() : AuthRepository {
             // Upload the new image to Firebase Storage
             val uploadedPhotoUrl = uploadImageToFirebaseStorage(Uri.parse(photoUri))
 
-            Log.d("uploadedPhotoUrl", "uploadedPhotoUrl: $uploadedPhotoUrl")
+            if (uploadedPhotoUrl.isEmpty()) {
+                emit(Response.Failure(Exception("Failed to upload image to Firebase Storage")))
+                return@flow
+            }
 
             // Update the user's profile with the new image URL
             val user = auth.currentUser
-            val profileUpdates = UserProfileChangeRequest.Builder()
-                .setDisplayName(displayName)
-                .setPhotoUri(Uri.parse(uploadedPhotoUrl))
-                .build()
+            val profileUpdates = UserProfileChangeRequest.Builder().setDisplayName(displayName)
+                .setPhotoUri(Uri.parse(uploadedPhotoUrl)).build()
 
             user?.updateProfile(profileUpdates)?.await()
 
@@ -205,6 +203,22 @@ class AuthRepositoryImpl @Inject constructor() : AuthRepository {
             Response.Failure(e)
         }
     }
+
+    override suspend fun sendEmailVerification(): Response<Unit> = flow {
+        try {
+            val user = auth.currentUser
+            // If the user is already verified, don't send email again
+            if (user?.isEmailVerified == true) {
+                emit(Response.Failure(Exception("Your email is already verified")))
+            } else {
+                user?.sendEmailVerification()?.await()
+                emit(Response.Success(Unit))
+            }
+        } catch (e: Exception) {
+            emit(Response.Failure(e))
+        }
+    }.flowOn(Dispatchers.IO).single()
+
 
 
 

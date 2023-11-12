@@ -49,14 +49,7 @@ fun SnackbarWrapper(
         }
     }
 
-    // Define the background color based on whether it's an error or success
-    val backgroundColor = if (error != null) {
-        Color.Red
-    } else if (success != null) {
-        Color.Green
-    } else {
-        Color.White
-    }
+
 
     // SnackbarHost that displays the Snackbar
     SnackbarHost(
@@ -64,11 +57,13 @@ fun SnackbarWrapper(
         modifier = Modifier
             .fillMaxWidth()
             .padding(16.dp)
-    ) { data ->
+    ) {
         Snackbar(
             modifier = Modifier
                 .padding(16.dp)
-                .background(backgroundColor), // Apply the background color
+                .background(if (error != null) Color.Red else Color.Green),
+
+
             action = {
                 if (error != null) {
                     TextButton(onClick = onDismiss) {

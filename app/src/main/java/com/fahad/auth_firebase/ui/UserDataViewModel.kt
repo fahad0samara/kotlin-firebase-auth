@@ -34,12 +34,19 @@ class UserDataViewModel @Inject constructor(private val authRepository: AuthRepo
     fun getUserData() {
         viewModelScope.launch {
             val response = authRepository.getUserData()
-            Log.d("response", "getUserData: $response")
             if (response is Response.Success) {
                 _user.value = response.data
+                Log.d("UserDataViewModel", "getUserData: ${response.data}")
+
+                // Move the email verification check here
+                if (response.data.isEmailVerified) {
+                    _success.value = "Email verification successful"
+                }
             }
         }
     }
+
+
 
     fun setUser(userData: User) {
         _user.value = userData
@@ -48,22 +55,34 @@ class UserDataViewModel @Inject constructor(private val authRepository: AuthRepo
     // In UserDataViewModel
     fun updateUserProfile(displayName: String, photoUri: Uri, navController: NavController) {
         _isLoading.value = true
-        // Update local data
-        val currentUser = user.value
-        val updatedUser = currentUser?.copy(
-            displayName = displayName, photoUrl = photoUri.toString()
-        )
-        _user.value = updatedUser
+
+        // Clear previous errors
+        _error.value = null
 
         // Update data in Firebase
+        val currentUser = user.value
         val uid = currentUser?.uid
+
         if (uid != null) {
             viewModelScope.launch {
                 try {
                     val response =
                         authRepository.updateUserProfile(uid, displayName, photoUri.toString())
                     if (response is Response.Success) {
+                        // Update local data only if the remote update is successful
+                        _user.value = currentUser.copy(
+                            displayName = displayName, photoUrl = photoUri.toString()
+                        )
+
                         _success.value = "Profile updated successfully"
+
+                        // Delay for 2 seconds before navigating to the profile screen
+                        delay(2000)
+
+                        // Navigate to the profile screen
+                        navController.navigate("profile") {
+                            popUpTo("edit_profile") { inclusive = true }
+                        }
                     } else if (response is Response.Failure) {
                         _error.value = "Failed to update profile: ${response.exception.message}"
                     }
@@ -71,18 +90,7 @@ class UserDataViewModel @Inject constructor(private val authRepository: AuthRepo
                     _error.value = "Failed to update profile: ${e.message}"
                 } finally {
                     _isLoading.value = false
-
-                    // Delay for 2 seconds before navigating to the profile screen
-                    delay(2000)
-
-                    // Navigate to the profile screen
-                    navController.navigate("profile") {
-                        popUpTo("edit_profile") { inclusive = true }
-                    }
-
                 }
-
-
             }
         }
     }
@@ -96,6 +104,27 @@ class UserDataViewModel @Inject constructor(private val authRepository: AuthRepo
     fun clearSuccess() {
         _success.value = null
     }
+
+
+    fun sendEmailVerification() {
+        viewModelScope.launch {
+            try {
+                val response = authRepository.sendEmailVerification()
+                if (response is Response.Success) {
+                    _success.value = "Email verification sent successfully"
+                    // Update the user data after email verification
+                    getUserData()
+                } else {
+                    _error.value = "Failed to send email verification"
+                }
+            } catch (e: Exception) {
+                // Handle exceptions (e.g., show an error message)
+                _error.value = "Failed to send email verification: ${e.message}"
+            }
+        }
+    }
+
+
 
 
     fun logout() {

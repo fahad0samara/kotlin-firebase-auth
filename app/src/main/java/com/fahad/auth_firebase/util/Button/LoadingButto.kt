@@ -19,11 +19,14 @@ import androidx.compose.ui.unit.dp
 fun LoadingButton(
     text: String,
     isLoading: Boolean,
-    onClick: () -> Unit
+    onClick: () -> Unit,
+    enabled: Boolean = true, // Default to true
+    modifier: Modifier = Modifier
 ) {
     Button(
         onClick = onClick,
-        modifier = Modifier.fillMaxWidth().padding(0.dp, 0.dp, 0.dp, 16.dp)
+        enabled = enabled, // Set the enabled state based on the provided boolean
+        modifier = modifier.fillMaxWidth().padding(0.dp, 0.dp, 0.dp, 16.dp)
     ) {
         if (isLoading) {
             Row(verticalAlignment = Alignment.CenterVertically) {
