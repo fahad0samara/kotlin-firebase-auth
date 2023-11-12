@@ -98,7 +98,7 @@ fun MainScreen() {
                 navController = navController, registerViewModel = registerViewModel
             )
         }
-        composable("success") {
+        composable("profile") {
             ProfileScreen(
                 navController = navController, userDataViewModel = userDataViewModel
             )
@@ -133,7 +133,7 @@ private fun checkAuthenticationState(navController: NavController, userDataViewM
 
 
         // Navigate to the success screen
-        navController.navigate("success") {
+        navController.navigate("profile") {
             popUpTo("loading") { inclusive = true }
         }
     } else {

@@ -15,6 +15,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOn
+
 import kotlinx.coroutines.flow.single
 import kotlinx.coroutines.tasks.await
 import java.net.URL
@@ -42,7 +43,7 @@ class AuthRepositoryImpl @Inject constructor() : AuthRepository {
             // Upload the image to Firebase Storage
             val uploadedPhotoUrl = uploadImageToFirebaseStorage(Uri.parse(photoUri))
 
-            Log.d("uploadedPhotoUrl", "uploadedPhotoUrl: $uploadedPhotoUrl")
+
             // After successful registration, set the display name and photo URL
             val user = auth.currentUser
             val profileUpdates = UserProfileChangeRequest.Builder().setDisplayName(displayName)
@@ -84,24 +85,7 @@ class AuthRepositoryImpl @Inject constructor() : AuthRepository {
     }.flowOn(Dispatchers.IO)
 
 
-    suspend fun updateUserPhotoUrl(newImageUri: Uri) {
-        try {
-            // Step 1: Upload the new image to Firebase Storage
-            val uploadedPhotoUrl = uploadImageToFirebaseStorage(newImageUri)
 
-            // Step 2: Update the user's profile in Firebase Authentication
-            val user = auth.currentUser
-            val profileUpdates =
-                UserProfileChangeRequest.Builder().setPhotoUri(Uri.parse(uploadedPhotoUrl)).build()
-
-            user?.updateProfile(profileUpdates)?.await()
-
-
-        } catch (e: Exception) {
-            // Handle any errors (e.g., log, show a message to the user)
-            Log.e("AuthRepositoryImpl", "Error updating profile image: ${e.message}")
-        }
-    }
 
 
     private suspend fun uploadImageToFirebaseStorage(photoUri: Uri): String {
@@ -127,11 +111,11 @@ class AuthRepositoryImpl @Inject constructor() : AuthRepository {
     private fun getUserDataFromFirebase(): User {
         val firebaseUser = auth.currentUser
         val uid = firebaseUser?.uid ?: throw Exception("User is not logged in")
-        Log.d("AuthRepositoryImpl", "getUserDataFromFirebase - uid: $uid")
+
         val email = firebaseUser.email ?: ""
         val displayName = firebaseUser.displayName ?: ""
         val photoUrl = downloadImageFromFirebaseStorage(firebaseUser.photoUrl?.toString() ?: "")
-        Log.d("AuthRepositoryImpl", "getUserDataFromFirebase - photoUrl: $photoUrl")
+
 
 
 
@@ -171,20 +155,30 @@ class AuthRepositoryImpl @Inject constructor() : AuthRepository {
     }.flowOn(Dispatchers.IO).single()
 
     // In AuthRepository
-    // In AuthRepository
+
     override suspend fun updateUserProfile(
-        uid: String, displayName: String, photoUri: String
+        uid: String,
+        displayName: String,
+        photoUri: String
     ): Response<User> = flow {
         try {
-            // Upload the image to Firebase Storage
+            // Fetch the current user's data
+            val currentUser = getUserDataFromFirebase()
+
+            // Delete the previous image from Firebase Storage
+            currentUser.photoUrl?.let { deleteImageFromFirebaseStorage(it) }
+
+            // Upload the new image to Firebase Storage
             val uploadedPhotoUrl = uploadImageToFirebaseStorage(Uri.parse(photoUri))
 
             Log.d("uploadedPhotoUrl", "uploadedPhotoUrl: $uploadedPhotoUrl")
 
-            // Update the user's profile with the uploaded photo URL
+            // Update the user's profile with the new image URL
             val user = auth.currentUser
-            val profileUpdates = UserProfileChangeRequest.Builder().setDisplayName(displayName)
-                .setPhotoUri(Uri.parse(uploadedPhotoUrl)).build()
+            val profileUpdates = UserProfileChangeRequest.Builder()
+                .setDisplayName(displayName)
+                .setPhotoUri(Uri.parse(uploadedPhotoUrl))
+                .build()
 
             user?.updateProfile(profileUpdates)?.await()
 
@@ -195,6 +189,25 @@ class AuthRepositoryImpl @Inject constructor() : AuthRepository {
             emit(Response.Failure(e))
         }
     }.flowOn(Dispatchers.IO).single()
+
+
+    private suspend fun deleteImageFromFirebaseStorage(photoUrl: String): Response<Unit> {
+        return try {
+            if (photoUrl.isNotEmpty() && photoUrl.startsWith("https://")) {
+                val storageRef = storage.getReferenceFromUrl(photoUrl)
+                storageRef.delete().await()
+                Response.Success(Unit)
+            } else {
+                Response.Failure(Exception("Invalid photoUrl format"))
+            }
+        } catch (e: Exception) {
+            // Handle the exception, e.g., log it or throw a custom exception
+            Response.Failure(e)
+        }
+    }
+
+
+
 
 
     override suspend fun logout(): Response<Unit> = flow {

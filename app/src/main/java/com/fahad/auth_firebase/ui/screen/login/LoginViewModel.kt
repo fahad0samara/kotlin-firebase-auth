@@ -39,7 +39,7 @@ class LoginViewModel @Inject constructor(private val repository: AuthRepository,
                 val user = loginResult.data
 
                 userDataViewModel.setUser(user)
-                navController.navigate("success")
+                navController.navigate("profile")
             }
 
 

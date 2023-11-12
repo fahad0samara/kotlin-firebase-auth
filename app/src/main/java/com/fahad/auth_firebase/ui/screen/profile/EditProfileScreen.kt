@@ -16,11 +16,14 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.Button
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 
@@ -36,23 +39,25 @@ import coil.compose.rememberAsyncImagePainter
 import coil.request.ImageRequest
 import com.fahad.auth_firebase.R
 import com.fahad.auth_firebase.ui.UserDataViewModel
+import com.fahad.auth_firebase.util.Button.LoadingButton
+import com.fahad.auth_firebase.util.Button.SnackbarWrapper
+import kotlinx.coroutines.delay
 
 @Composable
 fun EditProfileScreen(
     navController: NavController,
     userDataViewModel: UserDataViewModel
 ) {
-
-
     var displayName by rememberSaveable { mutableStateOf(userDataViewModel.user.value?.displayName ?: "") }
-    var photoUri by rememberSaveable { mutableStateOf<Uri?>(
-        userDataViewModel.user.value?.photoUrl?.let { Uri.parse(it
-
-
-        ) }
-    ) }
-
-
+    var photoUri by rememberSaveable {
+        mutableStateOf<Uri?>(
+            userDataViewModel.user.value?.photoUrl?.let { Uri.parse(it) }
+        )
+    }
+    val user = userDataViewModel.user.collectAsState().value
+    val error = userDataViewModel.error.collectAsState().value
+    val success = userDataViewModel.success.collectAsState().value
+    val isLoading = userDataViewModel.isLoading.collectAsState().value
 
     val launcher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetContent()
@@ -60,6 +65,9 @@ fun EditProfileScreen(
         photoUri = uri
     }
 
+
+
+    // Rest of your UI
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -73,22 +81,17 @@ fun EditProfileScreen(
             contentAlignment = Alignment.Center
         ) {
             Image(
-                painter = // Placeholder image resource
-                rememberAsyncImagePainter(
-                    ImageRequest.Builder // Error image resource
-                    (LocalContext.current).data(
-                        photoUri
-                    ).apply(block = fun ImageRequest.Builder.() {
-                    placeholder(R.drawable.ic_launcher_background) // Placeholder image resource
-                    error(R.drawable.ic_launcher_foreground) // Error image resource
-                    crossfade(true)
-                }).build()
+                painter = rememberAsyncImagePainter(
+                    ImageRequest.Builder(LocalContext.current).data(photoUri).apply {
+                        placeholder(R.drawable.ic_launcher_background)
+                        error(R.drawable.ic_launcher_foreground)
+                        crossfade(true)
+                    }.build()
                 ),
                 contentDescription = "User Image",
                 modifier = Modifier
                     .size(200.dp)
                     .clip(CircleShape)
-
                     .padding(vertical = 16.dp)
             )
         }
@@ -110,24 +113,34 @@ fun EditProfileScreen(
                 .fillMaxWidth()
                 .padding(0.dp, 16.dp, 0.dp, 16.dp)
         )
-
-        // Save Changes Button
-
-        Button(
+        //LoadingButton
+        LoadingButton(
+            text="Save Changes",
+            isLoading= isLoading,
             onClick = {
-                // Save changes to the user's profile
                 photoUri?.let { uri ->
                     userDataViewModel.updateUserProfile(
                         displayName,
-                        uri
+                        uri,
+                        navController
+
                     )
                 }
-                navController.popBackStack()
             },
-            modifier = Modifier.padding(16.dp)
-        ) {
-            Text("Save Changes")
-        }
+        )
+
+
+
 
     }
+
+    SnackbarWrapper(
+        error = error,
+        success = success,
+        onDismiss = { userDataViewModel.clearError(); userDataViewModel.clearSuccess() }
+    )
+
+
+
 }
+
