@@ -53,9 +53,7 @@ fun ProfileScreen(
     val displayName = user?.displayName
     val email = user?.email
     val photoUrl = user?.photoUrl
-Log.d("photoUrl", "photoUrl: $photoUrl")
 
-    Log.d("user", "displayName: $user")
 
     Column(
         modifier = Modifier
@@ -94,17 +92,18 @@ Log.d("photoUrl", "photoUrl: $photoUrl")
                     rememberAsyncImagePainter(ImageRequest.Builder // Error image resource
                         (LocalContext.current).data(data = photoUrl).apply(block = fun ImageRequest.Builder.() {
                         placeholder(R.drawable.ic_launcher_background) // Placeholder image resource
-                        error(R.drawable.ic_launcher_background) // Error image resource
+                        error(R.drawable.ic_launcher_foreground) // Error image resource
                         crossfade(true)
                     }).build()
                     ),
                     contentDescription = "User Image",
                     modifier = Modifier
-                        .size(120.dp)
+                        .size(200.dp)
                         .clip(CircleShape)
-                        .border(2.dp, MaterialTheme.colorScheme.primary, CircleShape)
+
                         .padding(vertical = 16.dp)
                 )
+
             }
 
 

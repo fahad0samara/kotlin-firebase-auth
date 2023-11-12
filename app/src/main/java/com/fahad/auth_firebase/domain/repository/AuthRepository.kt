@@ -15,7 +15,7 @@ interface AuthRepository {
 
 
 
-    suspend fun updateUserProfile(uid: String, displayName: String, photoUrl: String?): Response<User>
+    suspend fun updateUserProfile(uid: String, displayName: String,photoUri: String): Response<User>
     suspend fun logout(): Response<Unit>
 
     suspend fun getUserData(): Response<User>

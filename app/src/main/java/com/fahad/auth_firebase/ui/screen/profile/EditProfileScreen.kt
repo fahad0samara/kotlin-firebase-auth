@@ -29,9 +29,12 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import coil.compose.rememberAsyncImagePainter
+import coil.request.ImageRequest
+import com.fahad.auth_firebase.R
 import com.fahad.auth_firebase.ui.UserDataViewModel
 
 @Composable
@@ -48,6 +51,8 @@ fun EditProfileScreen(
 
         ) }
     ) }
+
+
 
     val launcher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetContent()
@@ -67,23 +72,25 @@ fun EditProfileScreen(
             modifier = Modifier.fillMaxWidth(),
             contentAlignment = Alignment.Center
         ) {
-            if (photoUri != null) {
-                Image(
-                    painter = rememberAsyncImagePainter(photoUri),
-                    contentDescription = "User's photo",
-                    modifier = Modifier
-                        .size(120.dp)
-                        .clip(CircleShape)
-                        .border(1.dp, androidx.compose.ui.graphics.Color.Black, CircleShape)
-                )
-            } else {
-                Icon(
-                    imageVector = Icons.Default.Person,
-                    contentDescription = "No photo selected",
-                    tint = MaterialTheme.colorScheme.primary,
-                    modifier = Modifier.size(120.dp).align(Alignment.Center).border(2.dp, androidx.compose.ui.graphics.Color.Yellow, CircleShape)
-                )
-            }
+            Image(
+                painter = // Placeholder image resource
+                rememberAsyncImagePainter(
+                    ImageRequest.Builder // Error image resource
+                    (LocalContext.current).data(
+                        photoUri
+                    ).apply(block = fun ImageRequest.Builder.() {
+                    placeholder(R.drawable.ic_launcher_background) // Placeholder image resource
+                    error(R.drawable.ic_launcher_foreground) // Error image resource
+                    crossfade(true)
+                }).build()
+                ),
+                contentDescription = "User Image",
+                modifier = Modifier
+                    .size(200.dp)
+                    .clip(CircleShape)
+
+                    .padding(vertical = 16.dp)
+            )
         }
 
         // Button to open the image picker
@@ -105,18 +112,22 @@ fun EditProfileScreen(
         )
 
         // Save Changes Button
+
         Button(
             onClick = {
                 // Save changes to the user's profile
-                photoUri?.let { userDataViewModel.updateUserProfile(
-                    displayName,
-                    it.toString()
-                ) }
+                photoUri?.let { uri ->
+                    userDataViewModel.updateUserProfile(
+                        displayName,
+                        uri
+                    )
+                }
                 navController.popBackStack()
             },
             modifier = Modifier.padding(16.dp)
         ) {
             Text("Save Changes")
         }
+
     }
 }

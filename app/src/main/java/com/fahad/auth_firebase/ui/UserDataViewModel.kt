@@ -32,27 +32,32 @@ class UserDataViewModel @Inject constructor(private val authRepository: AuthRepo
         _user.value = userData
     }
 
-    fun updateUserProfile(displayName: String, photoUri: String) {
+    // In UserDataViewModel
+    fun updateUserProfile(displayName: String, photoUri: Uri) {
         // Update local data
         val currentUser = user.value
         val updatedUser = currentUser?.copy(
             displayName = displayName,
-            photoUrl = photoUri
+            photoUrl = photoUri.toString()
         )
         _user.value = updatedUser
+        Log.d("updatedUser", "updateUserProfile: $updatedUser")
 
         // Update data in Firebase
         val uid = currentUser?.uid
         if (uid != null) {
             viewModelScope.launch {
-                val response = authRepository.updateUserProfile(uid, displayName, photoUri)
+                val response = authRepository.updateUserProfile(uid, displayName, photoUri.toString())
                 if (response is Response.Failure) {
-                    // Revert local data
+                    // Revert local data in case of failure
                     _user.value = currentUser
+                    Log.d("updatedUser", "updateUserProfile: $currentUser")
                 }
             }
         }
     }
+
+
 
 
     fun logout() {
