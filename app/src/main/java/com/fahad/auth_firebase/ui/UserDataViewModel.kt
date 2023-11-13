@@ -30,21 +30,55 @@ class UserDataViewModel @Inject constructor(private val authRepository: AuthRepo
 
     private val _success = MutableStateFlow<String?>(null)
     val success: StateFlow<String?> = _success
+    private val _isEmailVerified = MutableStateFlow(false)
+    val isEmailVerified: StateFlow<Boolean> = _isEmailVerified
+
+
 
     fun getUserData() {
         viewModelScope.launch {
             val response = authRepository.getUserData()
             if (response is Response.Success) {
                 _user.value = response.data
-                Log.d("UserDataViewModel", "getUserData: ${response.data}")
-
-                // Move the email verification check here
-                if (response.data.isEmailVerified) {
-                    _success.value = "Email verification successful"
-                }
+                // Check if the user is already verified
+                _isEmailVerified.value = response.data.isEmailVerified
             }
         }
     }
+
+    fun markEmailAsVerified() {
+        _isLoading.value = true
+        _success.value = null
+        _isEmailVerified.value = false
+
+        _error.value = null
+
+        viewModelScope.launch {
+
+            try {
+                val response = authRepository.markEmailAsVerified()
+                if (response is Response.Success) {
+                    // Update the user's email verification status in the local state
+                    _user.value = user.value?.copy(isEmailVerified = true)
+                    _success.value = "Email verified successfully"
+                    _isLoading.value = false
+
+                } else if (response is Response.Failure) {
+                    //if the user not verified
+                    _error.value = "${response.exception.message}"
+                    _isLoading.value = false
+
+
+                }
+            } catch (e: Exception) {
+                // Handle other exceptions
+                _error.value = "Failed to verify email: ${e.message}"
+                _isLoading.value = false
+
+            }
+        }
+    }
+
 
 
 

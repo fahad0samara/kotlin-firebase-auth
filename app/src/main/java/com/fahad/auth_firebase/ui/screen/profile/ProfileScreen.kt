@@ -1,9 +1,11 @@
 package com.fahad.auth_firebase.ui.screen.profile
 
+import android.annotation.SuppressLint
 import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -30,6 +32,7 @@ import androidx.compose.material3.CardColors
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
@@ -58,101 +61,44 @@ import com.fahad.auth_firebase.R
 
 
 import com.fahad.auth_firebase.ui.UserDataViewModel
+import com.fahad.auth_firebase.util.Button.LoadingButton
 import com.fahad.auth_firebase.util.Button.SnackbarWrapper
 import kotlin.concurrent.fixedRateTimer
 
 
 @Composable
 fun ProfileScreen(
-    navController: NavController, userDataViewModel: UserDataViewModel
+    navController: NavController,
+    userDataViewModel: UserDataViewModel
 ) {
     val user by userDataViewModel.user.collectAsState()
     val displayName = user?.displayName
     val email = user?.email
     val photoUrl = user?.photoUrl
-    val isEmailVerified = user?.isEmailVerified ?: false
 
-    val successMessage by userDataViewModel.success.collectAsState()
-    val errorMessage by userDataViewModel.error.collectAsState()
+    val error = userDataViewModel.error.collectAsState().value
+    val success = userDataViewModel.success.collectAsState().value
+    val isLoading = userDataViewModel.isLoading.collectAsState().value
+    val isEmailVerified by userDataViewModel.isEmailVerified.collectAsState()
 
 
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .padding(10.dp)
-            .background(MaterialTheme.colorScheme.background.copy(alpha = 0.8f)) // Transparent background
-            .border(2.dp, Color.Gray, shape = RoundedCornerShape(20.dp)) // Border around the screen
-            .padding(7.dp), contentAlignment = Alignment.TopCenter
+            .padding(16.dp)
+            .background(MaterialTheme.colorScheme.background.copy(alpha = 0.8f))
+            .border(2.dp, Color.Gray, shape = RoundedCornerShape(16.dp))
+            .padding(16.dp),
+        contentAlignment = Alignment.TopCenter
     ) {
-        // Periodically fetch the latest user data
-        // Periodically fetch the latest user data with a delay
-        DisposableEffect(Unit) {
-            val interval = 60 * 1000L // Check every 60 seconds
-            val delay = 5000L // Initial delay of 5 seconds
-            val timer = fixedRateTimer("emailVerificationTimer", true, delay, interval) {
-                userDataViewModel.getUserData()
-            }
-
-            onDispose {
-                timer.cancel()
-            }
-        }
-
-        // Display a progress bar when loading
-        if (userDataViewModel.isLoading.collectAsState().value) {
-            CircularProgressIndicator(
-                modifier = Modifier
-                    .size(50.dp)
-                    .align(Alignment.Center)
-            )
-        }
-
-        // Display User Information
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(7.dp)
                 .background(MaterialTheme.colorScheme.surface)
-                .padding(7.dp),
+                .padding(16.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Top
         ) {
-            if (!isEmailVerified) {
-                // Display a message to verify the email
-                Card(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(7.dp),
-                ) {
-                    Text(
-                        text = "Verify your email address to unlock all features.",
-                        color = Color.White,
-                        textAlign = TextAlign.Center,
-                        modifier = Modifier.padding(7.dp)
-                    )
-                    Spacer(modifier = Modifier.height(8.dp))
-
-                    // Button to send email verification
-                    Button(
-                        onClick = {
-                            userDataViewModel.sendEmailVerification()
-                        },
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(50.dp),
-                        shape = RoundedCornerShape(8.dp),
-                        colors = ButtonDefaults.buttonColors(
-                            containerColor = Color.Red
-                        )
-                    ) {
-                        Text("Send Verification Email", color = Color.White)
-                    }
-                }
-
-
-            }
-
-            // Display the user's image or a placeholder using CoilImage
             Box(
                 modifier = Modifier
                     .size(200.dp)
@@ -171,16 +117,43 @@ fun ProfileScreen(
                 )
             }
 
-            // Add a border between image and text
             Spacer(modifier = Modifier.height(8.dp))
 
-            // Display User Name and Email with Icons
             Column(
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.Center,
                 modifier = Modifier.padding(16.dp)
             ) {
+                if (!isEmailVerified) {
+                    Card(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(8.dp),
+                    ) {
+                        Column(
+                            modifier = Modifier.padding(8.dp),
+                            horizontalAlignment = Alignment.CenterHorizontally
+                        ) {
+                            LoadingButton(
+                                isLoading = isLoading,
+                                text = "Verify Email",
+                                onClick = {
+                                    userDataViewModel.markEmailAsVerified()
+                                }
+                            )
 
+
+                            Spacer(modifier = Modifier.height(4.dp))
+                            Text(
+                                text = "Please verify your email address",
+                                fontSize = 12.sp,
+                                color = Color.White
+                            )
+                        }
+                    }
+
+                    Spacer(modifier = Modifier.height(8.dp))
+                }
 
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
@@ -224,7 +197,6 @@ fun ProfileScreen(
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // Edit Profile Button
             Button(
                 onClick = { navController.navigate("edit_profile") },
                 modifier = Modifier
@@ -236,7 +208,6 @@ fun ProfileScreen(
                 Text("Edit Profile", color = Color.White)
             }
 
-            // Sign Out Button
             Button(
                 onClick = {
                     userDataViewModel.logout()
@@ -252,20 +223,14 @@ fun ProfileScreen(
                 Text("Sign Out", color = Color.White)
             }
         }
-        // Button to send email verification
-
-
-        // Display Snackbars for success and error messages
-        SnackbarWrapper(error = errorMessage, success = successMessage, onDismiss = {
+    }
+    SnackbarWrapper(
+        error = error,
+        success = success,
+        onDismiss = {
             userDataViewModel.clearError()
             userDataViewModel.clearSuccess()
-        })
-    }
+        }
+    )
 }
-
-
-
-
-
-
 

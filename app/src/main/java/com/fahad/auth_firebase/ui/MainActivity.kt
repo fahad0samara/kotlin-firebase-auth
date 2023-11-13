@@ -27,7 +27,6 @@ import androidx.navigation.NavController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import com.fahad.auth_firebase.domain.model.User
 import com.fahad.auth_firebase.ui.screen.login.LoginScreen
 import com.fahad.auth_firebase.ui.screen.login.LoginViewModel
 import com.fahad.auth_firebase.ui.screen.profile.EditProfileScreen
@@ -37,7 +36,7 @@ import com.fahad.auth_firebase.ui.screen.register.RegisterScreen
 import com.fahad.auth_firebase.ui.screen.register.RegisterViewModel
 
 
-import com.fahad.auth_firebase.ui.ui.theme.AuthfirebaseTheme
+import com.fahad.auth_firebase.ui.theme.AuthfirebaseTheme
 import com.google.firebase.Firebase
 import com.google.firebase.auth.auth
 import dagger.hilt.android.AndroidEntryPoint

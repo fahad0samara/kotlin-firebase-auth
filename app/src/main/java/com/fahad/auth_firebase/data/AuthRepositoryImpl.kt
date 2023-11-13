@@ -221,6 +221,28 @@ class AuthRepositoryImpl @Inject constructor() : AuthRepository {
 
 
 
+    override suspend fun markEmailAsVerified(): Response<Unit> = flow {
+        try {
+            val user = auth.currentUser
+            user?.reload()?.await() // Reload the user data to get the latest email verification status
+            val updatedUser = auth.currentUser // Retrieve the user again to get the updated status
+
+            if (updatedUser?.isEmailVerified == true) {
+                emit(Response.Success(Unit))
+            } else {
+                // If the user is not verified, send email again and show error message
+                user?.sendEmailVerification()?.await()
+                emit(Response.Failure(Exception("Your email is not verified. We have sent you another email. Please verify your email")))
+
+
+
+            }
+        } catch (e: Exception) {
+            emit(Response.Failure(e))
+
+        }
+    }.flowOn(Dispatchers.IO).single()
+
 
 
 
