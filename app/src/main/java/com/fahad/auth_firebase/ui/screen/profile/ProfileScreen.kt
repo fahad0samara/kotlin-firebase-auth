@@ -42,7 +42,12 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.geometry.center
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.RadialGradientShader
+import androidx.compose.ui.graphics.Shader
+import androidx.compose.ui.graphics.ShaderBrush
 import androidx.compose.ui.layout.ContentScale.Companion.Crop
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
@@ -81,24 +86,85 @@ fun ProfileScreen(
     val isLoading = userDataViewModel.isLoading.collectAsState().value
     val isEmailVerified by userDataViewModel.isEmailVerified.collectAsState()
 
+    val largeRadialGradient = MaterialTheme.colorScheme.background.copy(alpha = 0.1f)
+
 
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .padding(16.dp)
-            .background(MaterialTheme.colorScheme.background.copy(alpha = 0.8f))
-            .border(2.dp, Color.Gray, shape = RoundedCornerShape(16.dp))
-            .padding(16.dp),
+
+            .background(largeRadialGradient)
+            .padding(10.dp) ,
         contentAlignment = Alignment.TopCenter
     ) {
+
         Column(
             modifier = Modifier
-                .fillMaxWidth()
+
+                .fillMaxSize()
+                .padding( top = 30.dp, bottom = 30.dp)
+
                 .background(MaterialTheme.colorScheme.surface)
-                .padding(16.dp),
+                .border(2.dp,
+                    MaterialTheme.colorScheme.secondary,
+                    shape = RoundedCornerShape(25.dp))
+                .fillMaxWidth()
+
+                .padding(10.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Top
         ) {
+            if (!isEmailVerified) {
+                Card(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(8.dp),
+                ) {
+                    Column(
+                        modifier = Modifier.padding(8.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+
+
+                        Text(
+                            text = "Verify your email to get full access" +
+                                    "so check your email and click on the link to verify your email" +
+                                    "if you didn't get any email click on the button to resend the email",
+
+                            fontSize = 12.sp,
+                            color = Color.White,
+                            textAlign = TextAlign.Center,
+                            fontWeight = FontWeight.Bold,
+
+                            )
+                        Spacer(modifier = Modifier.height(4.dp))
+
+
+                        LoadingButton(
+                            isLoading = isLoading,
+                            text = "Verify Email",
+
+                            onClick = {
+                                userDataViewModel.markEmailAsVerified()
+                            },
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(50.dp).size(50.dp)
+                            ,
+                            enabled = true,
+                            textloading = "we check your email"
+
+                        )
+
+
+
+                    }
+
+
+                }
+
+                Spacer(modifier = Modifier.height(8.dp))
+            }
             Box(
                 modifier = Modifier
                     .size(200.dp)
@@ -124,40 +190,17 @@ fun ProfileScreen(
                 verticalArrangement = Arrangement.Center,
                 modifier = Modifier.padding(16.dp)
             ) {
-                if (!isEmailVerified) {
-                    Card(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(8.dp),
-                    ) {
-                        Column(
-                            modifier = Modifier.padding(8.dp),
-                            horizontalAlignment = Alignment.CenterHorizontally
-                        ) {
-                            LoadingButton(
-                                isLoading = isLoading,
-                                text = "Verify Email",
-                                onClick = {
-                                    userDataViewModel.markEmailAsVerified()
-                                }
-                            )
 
-
-                            Spacer(modifier = Modifier.height(4.dp))
-                            Text(
-                                text = "Please verify your email address",
-                                fontSize = 12.sp,
-                                color = Color.White
-                            )
-                        }
-                    }
-
-                    Spacer(modifier = Modifier.height(8.dp))
-                }
 
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.SpaceBetween
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    modifier = Modifier.background(MaterialTheme.colorScheme.onSurface.copy(alpha = 0.2f)
+                        ,shape = RoundedCornerShape(20.dp)
+                    )
+                        .padding(10.dp)
+
+
                 ) {
                     Icon(
                         imageVector = Icons.Default.Person,
@@ -177,7 +220,12 @@ fun ProfileScreen(
                 Spacer(modifier = Modifier.height(8.dp))
 
                 Row(
-                    horizontalArrangement = Arrangement.SpaceBetween
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                            modifier = Modifier.background(MaterialTheme.colorScheme.onSurface.copy(alpha = 0.2f)
+                        ,shape = RoundedCornerShape(15.dp)
+                    )
+                        .padding(10.dp)
                 ) {
                     Icon(
                         imageVector = Icons.Default.Email,

@@ -88,6 +88,10 @@ fun LoginScreen(
 
     // Login Button
     LoadingButton(text = "Login", isLoading = loginViewModel.isLoading,
+        enabled = !(email.isBlank() || password.isBlank()),
+        textloading = "login...",
+
+
         onClick = {
             loginViewModel.login(email, password, navController)
         },

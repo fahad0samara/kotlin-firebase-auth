@@ -21,7 +21,8 @@ fun LoadingButton(
     isLoading: Boolean,
     onClick: () -> Unit,
     enabled: Boolean = true, // Default to true
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    textloading: String
 ) {
     Button(
         onClick = onClick,
@@ -35,7 +36,10 @@ fun LoadingButton(
                     color = Color.Black
                 )
                 Spacer(modifier = Modifier.width(8.dp))
-                Text(text = "Loading...")
+                //the texy be as the loading
+                Text(text = textloading)
+
+
             }
         } else {
             Text(text = text)

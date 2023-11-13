@@ -188,6 +188,8 @@ fun RegisterScreen(
         LoadingButton(
             text = "Register",
             isLoading = registerViewModel.isLoading,
+            enabled = !(email.isBlank() || password.isBlank() || name.isBlank() || photoUri == null),
+            textloading = "Registering...",
             onClick = {
                 registerViewModel.registerUser(email, password, name, photoUri.toString(), navController)
             }

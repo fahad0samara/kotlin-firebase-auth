@@ -157,6 +157,7 @@ fun EditProfileScreen(
                 text = "Save Changes",
                 isLoading = isLoading,
                 enabled = !(photoUri == null || displayName.isBlank()),
+                textloading = "Saving...",
                 onClick = {
                     photoUri?.let { uri ->
                         userDataViewModel.updateUserProfile(
