@@ -34,7 +34,6 @@ class UserDataViewModel @Inject constructor(private val authRepository: AuthRepo
     val isEmailVerified: StateFlow<Boolean> = _isEmailVerified
 
 
-
     fun getUserData() {
         viewModelScope.launch {
             val response = authRepository.getUserData()
@@ -51,7 +50,7 @@ class UserDataViewModel @Inject constructor(private val authRepository: AuthRepo
         _success.value = null
         _isEmailVerified.value = false
 
-        _error.value = null
+
 
         viewModelScope.launch {
 
@@ -62,6 +61,7 @@ class UserDataViewModel @Inject constructor(private val authRepository: AuthRepo
                     _user.value = user.value?.copy(isEmailVerified = true)
                     _success.value = "Email verified successfully"
                     _isLoading.value = false
+
 
                 } else if (response is Response.Failure) {
                     //if the user not verified
@@ -80,8 +80,6 @@ class UserDataViewModel @Inject constructor(private val authRepository: AuthRepo
     }
 
 
-
-
     fun setUser(userData: User) {
         _user.value = userData
     }
@@ -92,6 +90,7 @@ class UserDataViewModel @Inject constructor(private val authRepository: AuthRepo
 
         // Clear previous errors
         _error.value = null
+        _success.value = null
 
         // Update data in Firebase
         val currentUser = user.value
@@ -109,10 +108,6 @@ class UserDataViewModel @Inject constructor(private val authRepository: AuthRepo
                         )
 
                         _success.value = "Profile updated successfully"
-
-                        // Delay for 2 seconds before navigating to the profile screen
-                        delay(2000)
-
                         // Navigate to the profile screen
                         navController.navigate("profile") {
                             popUpTo("edit_profile") { inclusive = true }
@@ -157,8 +152,6 @@ class UserDataViewModel @Inject constructor(private val authRepository: AuthRepo
             }
         }
     }
-
-
 
 
     fun logout() {

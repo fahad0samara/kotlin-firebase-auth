@@ -17,20 +17,26 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Snackbar
+import androidx.compose.material3.SnackbarDuration
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
@@ -50,6 +56,7 @@ import com.fahad.auth_firebase.ui.UserDataViewModel
 import com.fahad.auth_firebase.util.Button.LoadingButton
 import com.fahad.auth_firebase.util.Button.SnackbarWrapper
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
 @Composable
 fun EditProfileScreen(
@@ -73,111 +80,148 @@ fun EditProfileScreen(
         photoUri = uri
     }
 
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(10.dp)
-            .background(MaterialTheme.colorScheme.background)
-            .border(2.dp, Color.Gray, shape = RoundedCornerShape(16.dp))
-            .padding(16.dp),
-        contentAlignment = Alignment.TopStart
-    ) {
-        // Cancel Button
-        IconButton(
-            onClick = { navController.popBackStack() },
-            modifier = Modifier
-                .padding(8.dp)
-                .background(
-                    color = MaterialTheme.colorScheme.secondary,
-                    shape = CircleShape
-                )
-        ) {
-            Icon(
-                imageVector = Icons.Default.ArrowBack,
-                contentDescription = "Back",
-                tint = Color.White
-            )
-        }
-
-        Column(
+    // Call the SnackbarWrapper with error and success messages
+    SnackbarWrapper0(error = error, success = success) {
+        Box(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(top = 56.dp), // Adjusted top padding to make space for the back button
-            verticalArrangement = Arrangement.Center,
-            horizontalAlignment = Alignment.CenterHorizontally
+                .padding(10.dp)
+
+                .border(2.dp, Color.Gray, shape = RoundedCornerShape(16.dp))
+                .padding(16.dp),
+            contentAlignment = Alignment.TopStart
         ) {
-            // Display the selected image or show an icon with background
-            Box(
+            // Cancel Button
+            IconButton(
+                onClick = { navController.popBackStack() },
                 modifier = Modifier
-                    .size(200.dp)
-                    .clip(CircleShape)
-                    .background(MaterialTheme.colorScheme.primary)
-                    .border(2.dp, Color.White, CircleShape)
-                    .padding(5.dp)
+                    .padding(8.dp)
+                    .background(
+                        color = MaterialTheme.colorScheme.secondary,
+                        shape = CircleShape
+                    )
             ) {
-                Image(
-                    painter = rememberAsyncImagePainter(model = photoUri),
-                    contentDescription = "User Image",
+                Icon(
+                    imageVector = Icons.Default.ArrowBack,
+                    contentDescription = "Back",
+                    tint = Color.White
+                )
+            }
+
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(top = 56.dp), // Adjusted top padding to make space for the back button
+                verticalArrangement = Arrangement.Center,
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                // Display the selected image or show an icon with background
+                Box(
                     modifier = Modifier
-                        .size(250.dp)
-                        .clip(CircleShape),
-                    alignment = Alignment.Center,
-                    contentScale = ContentScale.FillWidth
+                        .size(200.dp)
+                        .clip(CircleShape)
+                        .background(MaterialTheme.colorScheme.primary)
+                        .border(2.dp, Color.White, CircleShape)
+                        .padding(5.dp)
+                ) {
+                    Image(
+                        painter = rememberAsyncImagePainter(model = photoUri),
+                        contentDescription = "User Image",
+                        modifier = Modifier
+                            .size(250.dp)
+                            .clip(CircleShape),
+                        alignment = Alignment.Center,
+                        contentScale = ContentScale.FillWidth
+                    )
+                }
 
+                // Button to open the image picker
+                Button(
+                    onClick = { launcher.launch("image/*") },
+                    modifier = Modifier
+                        .padding(16.dp)
+                        .fillMaxWidth(),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = MaterialTheme.colorScheme.secondary,
+                        contentColor = Color.White
+                    )
+                ) {
+                    Text("Change Image")
+                }
 
+                // Display Name Input
+                OutlinedTextField(
+                    value = displayName,
+                    onValueChange = { displayName = it },
+                    label = { Text("Display Name") },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 16.dp)
+                )
+
+                // LoadingButton
+                LoadingButton(
+                    text = "Save Changes",
+                    isLoading = isLoading,
+                    enabled = !(photoUri == null || displayName.isBlank()),
+                    textloading = "Saving...",
+                    onClick = {
+                        photoUri?.let { uri ->
+                            userDataViewModel.updateUserProfile(
+                                displayName, uri, navController
+                            )
+                        }
+                    },
                 )
             }
-
-            // Button to open the image picker
-            Button(
-                onClick = { launcher.launch("image/*") },
-                modifier = Modifier
-                    .padding(16.dp)
-                    .fillMaxWidth(),
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = MaterialTheme.colorScheme.secondary,
-                    contentColor = Color.White
-                )
-            ) {
-                Text("Change Image")
-            }
-
-            // Display Name Input
-            OutlinedTextField(
-                value = displayName,
-                onValueChange = { displayName = it },
-                label = { Text("Display Name") },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(vertical = 16.dp)
-            )
-
-            // LoadingButton
-            LoadingButton(
-                text = "Save Changes",
-                isLoading = isLoading,
-                enabled = !(photoUri == null || displayName.isBlank()),
-                textloading = "Saving...",
-                onClick = {
-                    photoUri?.let { uri ->
-                        userDataViewModel.updateUserProfile(
-                            displayName, uri, navController
-                        )
-                    }
-                },
-            )
         }
-
-        SnackbarWrapper(
-            error = error,
-            success = success,
-            onDismiss = {
-                userDataViewModel.clearError()
-                userDataViewModel.clearSuccess()
-            }
-        )
     }
 }
+
+@Composable
+fun SnackbarWrapper0(error: String?, success: String?, content: @Composable () -> Unit) {
+    val snackbarHostState = remember { SnackbarHostState() }
+    val coroutineScope = rememberCoroutineScope()
+
+    // Show the Snackbar when error or success message changes
+    DisposableEffect(error, success) {
+        if (error != null || success != null) {
+            val message = error ?: success ?: ""
+            val actionLabel = if (error != null) "Dismiss" else "OK"
+
+            coroutineScope.launch {
+                snackbarHostState.showSnackbar(
+                    message = message,
+                    actionLabel = actionLabel,
+                    duration = SnackbarDuration.Short // Set a short duration
+                )
+            }
+        }
+
+        onDispose { } // Cleanup code if needed
+    }
+
+    // SnackbarHost that displays the Snackbar
+    SnackbarHost(
+        hostState = snackbarHostState,
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(16.dp)
+    ) {
+        Snackbar(
+            modifier = Modifier.padding(16.dp)
+        ) {
+            Text(
+                text = error ?: success ?: "",
+            )
+        }
+    }
+
+    // Display the content
+    content()
+
+}
+
 
 
 
