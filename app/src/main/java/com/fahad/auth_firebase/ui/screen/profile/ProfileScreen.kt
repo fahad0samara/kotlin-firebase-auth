@@ -39,16 +39,13 @@ import androidx.compose.ui.layout.ContentScale.Companion.Crop
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
-
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import coil.compose.rememberAsyncImagePainter
-
-
 import com.fahad.auth_firebase.ui.UserDataViewModel
 import com.fahad.auth_firebase.util.Button.LoadingButton
-import com.fahad.auth_firebase.util.Button.SnackbarWrapper
+import com.fahad.auth_firebase.util.Button.SnackbarWrapperProfile
 
 
 @Composable
@@ -60,8 +57,8 @@ fun ProfileScreen(
     val email = user?.email
     val photoUrl = user?.photoUrl
 
-    val error = userDataViewModel.error.collectAsState().value
-    val success = userDataViewModel.success.collectAsState().value
+    val error = userDataViewModel.profileError.collectAsState().value
+    val success = userDataViewModel.profileSuccess.collectAsState().value
     val isLoading = userDataViewModel.isLoading.collectAsState().value
     val isEmailVerified by userDataViewModel.isEmailVerified.collectAsState()
 
@@ -250,6 +247,15 @@ fun ProfileScreen(
         }
     }
 
+    SnackbarWrapperProfile(
+        success = success,
+        error = error,
+        onDismiss = {
+            userDataViewModel.clearMessages()
+
+
+        }
+    )
 }
 
 

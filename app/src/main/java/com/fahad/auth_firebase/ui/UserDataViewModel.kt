@@ -9,10 +9,12 @@ import com.fahad.auth_firebase.domain.model.Response
 import com.fahad.auth_firebase.domain.model.User
 import com.fahad.auth_firebase.domain.repository.AuthRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
 @HiltViewModel
@@ -21,15 +23,24 @@ class UserDataViewModel @Inject constructor(private val authRepository: AuthRepo
     private val _user = MutableStateFlow<User?>(null)
     val user: StateFlow<User?> = _user
 
-    private val _error = MutableStateFlow<String?>(null)
-    val error: StateFlow<String?> = _error
+    val _profileError = MutableStateFlow<String?>(null)
+    val profileError: StateFlow<String?> = _profileError
+
+    val _editProfileError = MutableStateFlow<String?>(null)
+    val editProfileError: StateFlow<String?> = _editProfileError
 
     private val _isLoading = MutableStateFlow(false)
     val isLoading: StateFlow<Boolean> = _isLoading
 
 
-    private val _success = MutableStateFlow<String?>(null)
-    val success: StateFlow<String?> = _success
+    // Mutable state flows for internal use
+    private val _profileSuccess = MutableStateFlow<String?>(null)
+    private val _editProfileSuccess = MutableStateFlow<String?>(null)
+
+    // Exposed state flows for external observation
+    val profileSuccess: StateFlow<String?> = _profileSuccess
+    val editProfileSuccess: StateFlow<String?> = _editProfileSuccess
+
     private val _isEmailVerified = MutableStateFlow(false)
     val isEmailVerified: StateFlow<Boolean> = _isEmailVerified
 
@@ -45,35 +56,25 @@ class UserDataViewModel @Inject constructor(private val authRepository: AuthRepo
         }
     }
 
+
     fun markEmailAsVerified() {
         _isLoading.value = true
-        _success.value = null
+        _profileSuccess.value = null
         _isEmailVerified.value = false
-
-
+        _profileError.value = null
 
         viewModelScope.launch {
-
             try {
                 val response = authRepository.markEmailAsVerified()
-                if (response is Response.Success) {
-                    // Update the user's email verification status in the local state
-                    _user.value = user.value?.copy(isEmailVerified = true)
-                    _success.value = "Email verified successfully"
-                    _isLoading.value = false
+                handleResponse(response)
 
-
-                } else if (response is Response.Failure) {
-                    //if the user not verified
-                    _error.value = "${response.exception.message}"
-                    _isLoading.value = false
-
-
-                }
             } catch (e: Exception) {
-                // Handle other exceptions
-                _error.value = "Failed to verify email: ${e.message}"
+                _profileError.value = "Failed to mark email as verified: ${e.message}"
+
+
+            } finally {
                 _isLoading.value = false
+
 
             }
         }
@@ -88,9 +89,9 @@ class UserDataViewModel @Inject constructor(private val authRepository: AuthRepo
     fun updateUserProfile(displayName: String, photoUri: Uri, navController: NavController) {
         _isLoading.value = true
 
-        // Clear previous errors
-        _error.value = null
-        _success.value = null
+        _editProfileError.value = null
+        _editProfileSuccess.value = null
+
 
         // Update data in Firebase
         val currentUser = user.value
@@ -107,16 +108,18 @@ class UserDataViewModel @Inject constructor(private val authRepository: AuthRepo
                             displayName = displayName, photoUrl = photoUri.toString()
                         )
 
-                        _success.value = "Profile updated successfully"
-                        // Navigate to the profile screen
-                        navController.navigate("profile") {
-                            popUpTo("edit_profile") { inclusive = true }
-                        }
+                        _editProfileSuccess.value = "Profile updated successfully"
+                        // Navigate to the profile screen after the snackbar disappears
+                        delay(2000)
+                        navController.popBackStack()
+
+
                     } else if (response is Response.Failure) {
-                        _error.value = "Failed to update profile: ${response.exception.message}"
+                        _editProfileError.value =
+                            "Failed to update profile: ${response.exception.message}"
                     }
                 } catch (e: Exception) {
-                    _error.value = "Failed to update profile: ${e.message}"
+                    _editProfileError.value = "Failed to update profile: ${e.message}"
                 } finally {
                     _isLoading.value = false
                 }
@@ -125,34 +128,22 @@ class UserDataViewModel @Inject constructor(private val authRepository: AuthRepo
     }
 
 
-    // Clear error and success messages
-    fun clearError() {
-        _error.value = null
+    fun clearMessages() {
+
+        _profileError.value = null
+        _profileSuccess.value = null
+        _editProfileError.value = null
+        _editProfileSuccess.value = null
     }
 
-    fun clearSuccess() {
-        _success.value = null
-    }
 
-
-    fun sendEmailVerification() {
-        viewModelScope.launch {
-            try {
-                val response = authRepository.sendEmailVerification()
-                if (response is Response.Success) {
-                    _success.value = "Email verification sent successfully"
-                    // Update the user data after email verification
-                    getUserData()
-                } else {
-                    _error.value = "Failed to send email verification"
-                }
-            } catch (e: Exception) {
-                // Handle exceptions (e.g., show an error message)
-                _error.value = "Failed to send email verification: ${e.message}"
-            }
+    private fun handleResponse(response: Response<*>) {
+        when (response) {
+            is Response.Success -> _editProfileSuccess.value = "Success: ${response.data}"
+            is Response.Failure -> _profileError.value = "Error: ${response.exception.message}"
+            else -> _profileError.value = "Error: Unknown error"
         }
     }
-
 
     fun logout() {
         viewModelScope.launch {

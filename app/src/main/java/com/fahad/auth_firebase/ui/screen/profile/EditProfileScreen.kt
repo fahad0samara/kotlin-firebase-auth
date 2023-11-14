@@ -54,7 +54,8 @@ import coil.request.ImageRequest
 import com.fahad.auth_firebase.R
 import com.fahad.auth_firebase.ui.UserDataViewModel
 import com.fahad.auth_firebase.util.Button.LoadingButton
-import com.fahad.auth_firebase.util.Button.SnackbarWrapper
+import com.fahad.auth_firebase.util.Button.SnackbarWrapperEdit
+
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
@@ -70,9 +71,10 @@ fun EditProfileScreen(
         mutableStateOf<Uri?>(userDataViewModel.user.value?.photoUrl?.let { Uri.parse(it) })
     }
     val user = userDataViewModel.user.collectAsState().value
-    val error = userDataViewModel.error.collectAsState().value
-    val success = userDataViewModel.success.collectAsState().value
+    val error = userDataViewModel.editProfileError.collectAsState().value
+    val success = userDataViewModel.editProfileSuccess.collectAsState().value
     val isLoading = userDataViewModel.isLoading.collectAsState().value
+
 
     val launcher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetContent()
@@ -174,7 +176,13 @@ fun EditProfileScreen(
                 )
             }
         }
-    }
+
+    SnackbarWrapperEdit(
+        success = success,
+        error = error,
+        onDismiss = { userDataViewModel.clearMessages() }
+    )
+}
 
 
 

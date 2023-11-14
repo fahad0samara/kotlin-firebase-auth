@@ -10,55 +10,52 @@ import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
 
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 
 import androidx.compose.ui.unit.dp
-import com.fahad.auth_firebase.domain.model.Response
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 
 
 @Composable
-fun SnackbarWrapper(
-    error: String?,
+fun SnackbarWrapperProfile(
     success: String?,
-
-    ) {
+    error: String?,
+    onDismiss: () -> Unit = {}
+) {
     val snackbarHostState = remember { SnackbarHostState() }
-
     val coroutineScope = rememberCoroutineScope()
 
-    // Show the Snackbar when error or success message changes
+    DisposableEffect(Unit) {
+        // This block will be executed when the effect is disposed
+        onDispose {
+            snackbarHostState.currentSnackbarData?.dismiss()
+            onDismiss()
+        }
+    }
+
     LaunchedEffect(error, success) {
-        if (error != null) {
+        if (error != null || success != null) {
+            val message = error ?: success ?: return@LaunchedEffect
+            val actionLabel = if (error != null) "Dismiss" else "OK"
+
             coroutineScope.launch {
                 snackbarHostState.showSnackbar(
-                    message = error,
-                    actionLabel = "Dismiss",
-                    duration = SnackbarDuration.Short // Set a short duration
-                )
-            }
-        } else if (success != null) {
-            coroutineScope.launch {
-                snackbarHostState.showSnackbar(
-                    message = success,
-                    actionLabel = "OK",
-                    duration = SnackbarDuration.Short // Set a short duration
+                    message = message,
+                    actionLabel = actionLabel,
+                    duration = SnackbarDuration.Short
                 )
             }
         }
     }
 
-
-
-    // SnackbarHost that displays the Snackbar
     SnackbarHost(
         hostState = snackbarHostState,
         modifier = Modifier
@@ -66,19 +63,16 @@ fun SnackbarWrapper(
             .padding(16.dp)
     ) {
         Snackbar(
-            modifier = Modifier
-                .padding(16.dp)
-
-
-
+            modifier = Modifier.padding(16.dp)
         ) {
-            Text(
-                text = error ?: success!!, // Display the error or success message
-
-            )
+            Text(text = error ?: success!!)
         }
     }
 }
+
+
+
+
 
 
 
