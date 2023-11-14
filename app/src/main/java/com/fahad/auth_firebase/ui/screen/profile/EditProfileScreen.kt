@@ -80,8 +80,7 @@ fun EditProfileScreen(
         photoUri = uri
     }
 
-    // Call the SnackbarWrapper with error and success messages
-    SnackbarWrapper0(error = error, success = success) {
+
         Box(
             modifier = Modifier
                 .fillMaxSize()
@@ -176,51 +175,8 @@ fun EditProfileScreen(
             }
         }
     }
-}
 
-@Composable
-fun SnackbarWrapper0(error: String?, success: String?, content: @Composable () -> Unit) {
-    val snackbarHostState = remember { SnackbarHostState() }
-    val coroutineScope = rememberCoroutineScope()
 
-    // Show the Snackbar when error or success message changes
-    DisposableEffect(error, success) {
-        if (error != null || success != null) {
-            val message = error ?: success ?: ""
-            val actionLabel = if (error != null) "Dismiss" else "OK"
-
-            coroutineScope.launch {
-                snackbarHostState.showSnackbar(
-                    message = message,
-                    actionLabel = actionLabel,
-                    duration = SnackbarDuration.Short // Set a short duration
-                )
-            }
-        }
-
-        onDispose { } // Cleanup code if needed
-    }
-
-    // SnackbarHost that displays the Snackbar
-    SnackbarHost(
-        hostState = snackbarHostState,
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(16.dp)
-    ) {
-        Snackbar(
-            modifier = Modifier.padding(16.dp)
-        ) {
-            Text(
-                text = error ?: success ?: "",
-            )
-        }
-    }
-
-    // Display the content
-    content()
-
-}
 
 
 

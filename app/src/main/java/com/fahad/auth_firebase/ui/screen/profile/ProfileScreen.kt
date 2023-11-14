@@ -67,191 +67,190 @@ fun ProfileScreen(
 
     val largeRadialGradient = MaterialTheme.colorScheme.background.copy(alpha = 0.1f)
 
-    SnackbarWrapper0(error = error, success = success) {
-        Box(
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+
+            .background(largeRadialGradient)
+            .padding(10.dp), contentAlignment = Alignment.TopCenter
+    ) {
+
+        Column(
             modifier = Modifier
+
                 .fillMaxSize()
+                .padding(top = 30.dp, bottom = 30.dp)
 
-                .background(largeRadialGradient)
-                .padding(10.dp), contentAlignment = Alignment.TopCenter
+                .background(MaterialTheme.colorScheme.surface)
+                .border(
+                    2.dp, MaterialTheme.colorScheme.secondary, shape = RoundedCornerShape(25.dp)
+                )
+                .fillMaxWidth()
+
+                .padding(10.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Top
         ) {
-
-            Column(
-                modifier = Modifier
-
-                    .fillMaxSize()
-                    .padding(top = 30.dp, bottom = 30.dp)
-
-                    .background(MaterialTheme.colorScheme.surface)
-                    .border(
-                        2.dp, MaterialTheme.colorScheme.secondary, shape = RoundedCornerShape(25.dp)
-                    )
-                    .fillMaxWidth()
-
-                    .padding(10.dp),
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.Top
-            ) {
-                if (!isEmailVerified) {
-                    Card(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(8.dp),
+            if (!isEmailVerified) {
+                Card(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(8.dp),
+                ) {
+                    Column(
+                        modifier = Modifier.padding(8.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally
                     ) {
-                        Column(
-                            modifier = Modifier.padding(8.dp),
-                            horizontalAlignment = Alignment.CenterHorizontally
-                        ) {
 
 
-                            Text(
-                                text = "Verify your email to get full access" + "so check your email and click on the link to verify your email" + "if you didn't get any email click on the button to resend the email",
+                        Text(
+                            text = "Verify your email to get full access" + "so check your email and click on the link to verify your email" + "if you didn't get any email click on the button to resend the email",
 
-                                fontSize = 12.sp,
-                                color = Color.White,
-                                textAlign = TextAlign.Center,
-                                fontWeight = FontWeight.Bold,
-
-                                )
-                            Spacer(modifier = Modifier.height(4.dp))
-
-
-                            LoadingButton(
-                                isLoading = isLoading,
-                                text = "Verify Email",
-
-                                onClick = {
-                                    userDataViewModel.markEmailAsVerified()
-                                },
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .height(50.dp),
-                                enabled = true,
-                                textloading = "we check your email"
+                            fontSize = 12.sp,
+                            color = Color.White,
+                            textAlign = TextAlign.Center,
+                            fontWeight = FontWeight.Bold,
 
                             )
+                        Spacer(modifier = Modifier.height(4.dp))
 
 
-                        }
+                        LoadingButton(
+                            isLoading = isLoading,
+                            text = "Verify Email",
+
+                            onClick = {
+                                userDataViewModel.markEmailAsVerified()
+                            },
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(50.dp),
+                            enabled = true,
+                            textloading = "we check your email"
+
+                        )
 
 
                     }
 
 
                 }
-                Box(
+
+
+            }
+            Box(
+                modifier = Modifier
+                    .size(200.dp)
+                    .clip(CircleShape)
+                    .background(MaterialTheme.colorScheme.primary)
+                    .border(2.dp, Color.White, CircleShape)
+                    .padding(5.dp)
+            ) {
+                Image(
+                    painter = rememberAsyncImagePainter(model = photoUrl),
+                    contentDescription = "User Image",
                     modifier = Modifier
                         .size(200.dp)
-                        .clip(CircleShape)
-                        .background(MaterialTheme.colorScheme.primary)
-                        .border(2.dp, Color.White, CircleShape)
-                        .padding(5.dp)
+                        .clip(CircleShape),
+                    contentScale = Crop
+                )
+            }
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.Center,
+                modifier = Modifier.padding(16.dp)
+            ) {
+
+
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    modifier = Modifier
+                        .background(
+                            MaterialTheme.colorScheme.onSurface.copy(alpha = 0.2f),
+                            shape = RoundedCornerShape(20.dp)
+                        )
+                        .padding(10.dp)
+
+
                 ) {
-                    Image(
-                        painter = rememberAsyncImagePainter(model = photoUrl),
-                        contentDescription = "User Image",
-                        modifier = Modifier
-                            .size(200.dp)
-                            .clip(CircleShape),
-                        contentScale = Crop
+                    Icon(
+                        imageVector = Icons.Default.Person,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.onSurface.copy(alpha = 1f)
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text(
+                        text = displayName ?: "",
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 15.sp,
+                        fontFamily = FontFamily.Monospace,
+                        color = MaterialTheme.colorScheme.onSurface
                     )
                 }
 
                 Spacer(modifier = Modifier.height(8.dp))
 
-                Column(
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.Center,
-                    modifier = Modifier.padding(16.dp)
-                ) {
-
-
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        modifier = Modifier
-                            .background(
-                                MaterialTheme.colorScheme.onSurface.copy(alpha = 0.2f),
-                                shape = RoundedCornerShape(20.dp)
-                            )
-                            .padding(10.dp)
-
-
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.Person,
-                            contentDescription = null,
-                            tint = MaterialTheme.colorScheme.onSurface.copy(alpha = 1f)
-                        )
-                        Spacer(modifier = Modifier.width(8.dp))
-                        Text(
-                            text = displayName ?: "",
-                            fontWeight = FontWeight.Bold,
-                            fontSize = 15.sp,
-                            fontFamily = FontFamily.Monospace,
-                            color = MaterialTheme.colorScheme.onSurface
-                        )
-                    }
-
-                    Spacer(modifier = Modifier.height(8.dp))
-
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        modifier = Modifier
-                            .background(
-                                MaterialTheme.colorScheme.onSurface.copy(alpha = 0.2f),
-                                shape = RoundedCornerShape(15.dp)
-                            )
-                            .padding(10.dp)
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.Email,
-                            contentDescription = null,
-                            tint = MaterialTheme.colorScheme.onSurface.copy(alpha = 1f)
-                        )
-                        Spacer(modifier = Modifier.width(8.dp))
-                        Text(
-                            text = email ?: "",
-                            fontWeight = FontWeight.Bold,
-                            fontSize = 15.sp,
-                            fontFamily = FontFamily.Monospace,
-                            color = MaterialTheme.colorScheme.onSurface
-                        )
-                    }
-                }
-
-                Spacer(modifier = Modifier.height(16.dp))
-
-                Button(
-                    onClick = { navController.navigate("edit_profile") },
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween,
                     modifier = Modifier
-                        .fillMaxWidth()
-                        .height(50.dp),
-                    shape = RoundedCornerShape(8.dp),
-                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.secondary)
+                        .background(
+                            MaterialTheme.colorScheme.onSurface.copy(alpha = 0.2f),
+                            shape = RoundedCornerShape(15.dp)
+                        )
+                        .padding(10.dp)
                 ) {
-                    Text("Edit Profile", color = Color.White)
-                }
-
-                Button(
-                    onClick = {
-                        userDataViewModel.logout()
-                        navController.navigate("login")
-                    },
-                    modifier = Modifier
-                        .padding(top = 8.dp)
-                        .fillMaxWidth()
-                        .height(50.dp),
-                    shape = RoundedCornerShape(8.dp),
-                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.secondary)
-                ) {
-                    Text("Sign Out", color = Color.White)
+                    Icon(
+                        imageVector = Icons.Default.Email,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.onSurface.copy(alpha = 1f)
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text(
+                        text = email ?: "",
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 15.sp,
+                        fontFamily = FontFamily.Monospace,
+                        color = MaterialTheme.colorScheme.onSurface
+                    )
                 }
             }
-        }
 
-    }}
+            Spacer(modifier = Modifier.height(16.dp))
+
+            Button(
+                onClick = { navController.navigate("edit_profile") },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(50.dp),
+                shape = RoundedCornerShape(8.dp),
+                colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.secondary)
+            ) {
+                Text("Edit Profile", color = Color.White)
+            }
+
+            Button(
+                onClick = {
+                    userDataViewModel.logout()
+                    navController.navigate("login")
+                },
+                modifier = Modifier
+                    .padding(top = 8.dp)
+                    .fillMaxWidth()
+                    .height(50.dp),
+                shape = RoundedCornerShape(8.dp),
+                colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.secondary)
+            ) {
+                Text("Sign Out", color = Color.White)
+            }
+        }
+    }
+
+}
 
 
 
