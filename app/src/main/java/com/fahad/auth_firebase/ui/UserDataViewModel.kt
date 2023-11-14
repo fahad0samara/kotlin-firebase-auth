@@ -23,10 +23,10 @@ class UserDataViewModel @Inject constructor(private val authRepository: AuthRepo
     private val _user = MutableStateFlow<User?>(null)
     val user: StateFlow<User?> = _user
 
-    val _profileError = MutableStateFlow<String?>(null)
+    private val _profileError = MutableStateFlow<String?>(null)
     val profileError: StateFlow<String?> = _profileError
 
-    val _editProfileError = MutableStateFlow<String?>(null)
+    private val _editProfileError = MutableStateFlow<String?>(null)
     val editProfileError: StateFlow<String?> = _editProfileError
 
     private val _isLoading = MutableStateFlow(false)

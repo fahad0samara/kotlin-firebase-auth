@@ -23,20 +23,15 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.Snackbar
-import androidx.compose.material3.SnackbarDuration
-import androidx.compose.material3.SnackbarHost
-import androidx.compose.material3.SnackbarHostState
+
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
+
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.DisposableEffect
-import androidx.compose.runtime.LaunchedEffect
+
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
+
 
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
@@ -45,32 +40,27 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.platform.LocalContext
+
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import coil.compose.rememberAsyncImagePainter
-import coil.compose.rememberImagePainter
-import coil.request.ImageRequest
-import com.fahad.auth_firebase.R
+
 import com.fahad.auth_firebase.ui.UserDataViewModel
 import com.fahad.auth_firebase.util.Button.LoadingButton
 import com.fahad.auth_firebase.util.Button.SnackbarWrapperEdit
 
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
 
 @Composable
 fun EditProfileScreen(
-    navController: NavController,
-    userDataViewModel: UserDataViewModel
+    navController: NavController, userDataViewModel: UserDataViewModel
 ) {
     var displayName by rememberSaveable {
         mutableStateOf(userDataViewModel.user.value?.displayName ?: "")
     }
     var photoUri by rememberSaveable {
-        mutableStateOf<Uri?>(userDataViewModel.user.value?.photoUrl?.let { Uri.parse(it) })
+        mutableStateOf(userDataViewModel.user.value?.photoUrl?.let { Uri.parse(it) })
     }
-    val user = userDataViewModel.user.collectAsState().value
+
     val error = userDataViewModel.editProfileError.collectAsState().value
     val success = userDataViewModel.editProfileSuccess.collectAsState().value
     val isLoading = userDataViewModel.isLoading.collectAsState().value
@@ -83,105 +73,109 @@ fun EditProfileScreen(
     }
 
 
-        Box(
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(10.dp)
+
+            .border(2.dp, Color.Gray, shape = RoundedCornerShape(16.dp))
+            .padding(16.dp),
+        contentAlignment = Alignment.TopStart
+    ) {
+        // Cancel Button
+        IconButton(
+            onClick = { navController.popBackStack() },
             modifier = Modifier
-                .fillMaxSize()
-                .padding(10.dp)
-
-                .border(2.dp, Color.Gray, shape = RoundedCornerShape(16.dp))
-                .padding(16.dp),
-            contentAlignment = Alignment.TopStart
+                .padding(8.dp)
+                .background(
+                    color = MaterialTheme.colorScheme.secondary, shape = CircleShape
+                )
         ) {
-            // Cancel Button
-            IconButton(
-                onClick = { navController.popBackStack() },
-                modifier = Modifier
-                    .padding(8.dp)
-                    .background(
-                        color = MaterialTheme.colorScheme.secondary,
-                        shape = CircleShape
-                    )
-            ) {
-                Icon(
-                    imageVector = Icons.Default.ArrowBack,
-                    contentDescription = "Back",
-                    tint = Color.White
-                )
-            }
-
-            Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(top = 56.dp), // Adjusted top padding to make space for the back button
-                verticalArrangement = Arrangement.Center,
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-                // Display the selected image or show an icon with background
-                Box(
-                    modifier = Modifier
-                        .size(200.dp)
-                        .clip(CircleShape)
-                        .background(MaterialTheme.colorScheme.primary)
-                        .border(2.dp, Color.White, CircleShape)
-                        .padding(5.dp)
-                ) {
-                    Image(
-                        painter = rememberAsyncImagePainter(model = photoUri),
-                        contentDescription = "User Image",
-                        modifier = Modifier
-                            .size(250.dp)
-                            .clip(CircleShape),
-                        alignment = Alignment.Center,
-                        contentScale = ContentScale.FillWidth
-                    )
-                }
-
-                // Button to open the image picker
-                Button(
-                    onClick = { launcher.launch("image/*") },
-                    modifier = Modifier
-                        .padding(16.dp)
-                        .fillMaxWidth(),
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = MaterialTheme.colorScheme.secondary,
-                        contentColor = Color.White
-                    )
-                ) {
-                    Text("Change Image")
-                }
-
-                // Display Name Input
-                OutlinedTextField(
-                    value = displayName,
-                    onValueChange = { displayName = it },
-                    label = { Text("Display Name") },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(vertical = 16.dp)
-                )
-
-                // LoadingButton
-                LoadingButton(
-                    text = "Save Changes",
-                    isLoading = isLoading,
-                    enabled = !(photoUri == null || displayName.isBlank()),
-                    textloading = "Saving...",
-                    onClick = {
-                        photoUri?.let { uri ->
-                            userDataViewModel.updateUserProfile(
-                                displayName, uri, navController
-                            )
-                        }
-                    },
-                )
-            }
+            Icon(
+                imageVector = Icons.Default.ArrowBack,
+                contentDescription = "Back",
+                tint = Color.White
+            )
         }
 
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(top = 56.dp), // Adjusted top padding to make space for the back button
+            verticalArrangement = Arrangement.Center,
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            // Display the selected image or show an icon with background
+            Box(
+                modifier = Modifier
+                    .size(200.dp)
+                    .clip(CircleShape)
+                    .background(MaterialTheme.colorScheme.primary)
+                    .border(2.dp, Color.White, CircleShape)
+                    .padding(5.dp)
+            ) {
+                Image(
+                    painter = rememberAsyncImagePainter(model = photoUri),
+                    contentDescription = "User Image",
+                    modifier = Modifier
+                        .size(250.dp)
+                        .clip(CircleShape),
+                    alignment = Alignment.Center,
+                    contentScale = ContentScale.FillWidth
+                )
+            }
+
+            // Button to open the image picker
+            Button(
+                onClick = { launcher.launch("image/*") },
+                modifier = Modifier
+                    .padding(16.dp)
+                    .fillMaxWidth(),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = MaterialTheme.colorScheme.secondary, contentColor = Color.White
+                )
+            ) {
+                Text("Change Image")
+            }
+
+            // Display Name Input
+            OutlinedTextField(value = displayName,
+                onValueChange = { displayName = it },
+                label = { Text("Display Name") },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 16.dp)
+            )
+
+            // LoadingButton
+            LoadingButton(
+                text = "Save Changes",
+                isLoading = isLoading,
+                enabled = !(photoUri == null || displayName.isBlank()),
+                textloading = "Saving...",
+                onClick = {
+                    photoUri?.let { uri ->
+                        userDataViewModel.updateUserProfile(
+                            displayName, uri, navController
+                        )
+                    }
+                },
+            )
+        }
+    }
+
     SnackbarWrapperEdit(
-        success = success,
-        error = error,
-        onDismiss = { userDataViewModel.clearMessages() }
+        errorMessage = error,
+        successMessage = success,
+        onDismiss = {
+            userDataViewModel.clearMessages()
+
+
+        }
     )
+
+
+
 }
 
 
