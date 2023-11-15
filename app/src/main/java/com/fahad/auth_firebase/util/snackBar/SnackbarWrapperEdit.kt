@@ -1,7 +1,6 @@
-package com.fahad.auth_firebase.util.Button
+package com.fahad.auth_firebase.util.snackBar
 
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.MaterialTheme

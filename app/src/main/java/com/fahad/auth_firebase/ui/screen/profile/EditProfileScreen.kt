@@ -3,7 +3,6 @@ package com.fahad.auth_firebase.ui.screen.profile
 import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
@@ -39,15 +38,14 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.layout.ContentScale
 
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
-import coil.compose.rememberAsyncImagePainter
 
 import com.fahad.auth_firebase.ui.UserDataViewModel
 import com.fahad.auth_firebase.util.Button.LoadingButton
-import com.fahad.auth_firebase.util.Button.SnackbarWrapperEdit
+import com.fahad.auth_firebase.util.snackBar.SnackbarWrapperEdit
+import com.fahad.auth_firebase.util.image.AsyncImageProfile
 
 
 @Composable
@@ -114,15 +112,9 @@ fun EditProfileScreen(
                     .border(2.dp, Color.White, CircleShape)
                     .padding(5.dp)
             ) {
-                Image(
-                    painter = rememberAsyncImagePainter(model = photoUri),
-                    contentDescription = "User Image",
-                    modifier = Modifier
-                        .size(250.dp)
-                        .clip(CircleShape),
-                    alignment = Alignment.Center,
-                    contentScale = ContentScale.FillWidth
+                AsyncImageProfile(photoUrl= photoUri.toString()
                 )
+
             }
 
             // Button to open the image picker

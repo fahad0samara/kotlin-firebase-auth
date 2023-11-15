@@ -44,6 +44,7 @@ import androidx.navigation.NavController
 import coil.compose.rememberAsyncImagePainter
 import com.fahad.auth_firebase.domain.model.Response
 import com.fahad.auth_firebase.util.Button.LoadingButton
+import com.fahad.auth_firebase.util.image.AsyncImageProfile
 
 @Composable
 fun RegisterScreen(
@@ -82,14 +83,7 @@ fun RegisterScreen(
         ) {
             // Display the selected image or show an icon
             if (photoUri != null) {
-                Image(
-                    painter = rememberAsyncImagePainter(photoUri),
-                    contentDescription = "User's photo",
-                    modifier = Modifier
-                        .size(80.dp)
-                        .clip(CircleShape)
-                        .border(1.dp, Color.Black, CircleShape)
-                )
+                AsyncImageProfile(photoUrl = photoUri.toString())
             } else {
                 Icon(
                     imageVector = Icons.Default.Person,
