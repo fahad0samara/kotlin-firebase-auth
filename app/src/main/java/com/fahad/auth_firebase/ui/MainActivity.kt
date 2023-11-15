@@ -7,14 +7,18 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
 
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.height
 
 import androidx.compose.material3.CircularProgressIndicator
 
 import androidx.compose.material3.MaterialTheme
 
 import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -23,6 +27,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
@@ -91,8 +98,11 @@ fun MainScreen() {
 
     NavHost(
         navController = navController,
-        startDestination = "loading" // Add a loading destination while checking authentication state
+        startDestination = "splash" // Set the splash screen as the initial destination
     ) {
+        composable("splash") {
+            SplashScreen()
+        }
         composable("loading") {
             // Show loading screen while checking authentication state
             LoadingScreen()
@@ -124,13 +134,41 @@ fun MainScreen() {
 fun LoadingScreen() {
     Box(
         modifier = Modifier
-            .fillMaxSize()
-            .background(Color.White),
+            .fillMaxSize().background(Color.Black),
         contentAlignment = Alignment.Center
     ) {
         CircularProgressIndicator()
+
     }
 }
+
+@Composable
+fun SplashScreen() {
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(Color.White), // Set a background color for the splash screen
+        contentAlignment = Alignment.Center
+    ) {
+        // Add your splash screen content
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Text(
+                text = "Auth Firebase",
+                fontSize = 40.sp,
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.primary
+            )
+            Spacer(modifier = Modifier.height(16.dp))
+            CircularProgressIndicator(color = MaterialTheme.colorScheme.primary)
+        }
+    }
+}
+
+
+
+
 
 private fun checkAuthenticationState(navController: NavController, userDataViewModel: UserDataViewModel) {
     val auth = Firebase.auth
