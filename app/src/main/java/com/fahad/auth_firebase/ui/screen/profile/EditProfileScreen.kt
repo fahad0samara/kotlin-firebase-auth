@@ -104,18 +104,10 @@ fun EditProfileScreen(
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             // Display the selected image or show an icon with background
-            Box(
-                modifier = Modifier
-                    .size(200.dp)
-                    .clip(CircleShape)
-                    .background(MaterialTheme.colorScheme.primary)
-                    .border(2.dp, Color.White, CircleShape)
-                    .padding(5.dp)
-            ) {
                 AsyncImageProfile(photoUrl= photoUri.toString()
                 )
 
-            }
+
 
             // Button to open the image picker
             Button(

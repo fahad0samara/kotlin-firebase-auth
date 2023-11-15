@@ -1,25 +1,21 @@
 package com.fahad.auth_firebase.ui.screen.login
 
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.core.animateFloatAsState
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
-import androidx.compose.animation.slideInVertically
-import androidx.compose.animation.slideOutVertically
-import androidx.compose.foundation.layout.Arrangement
+
+
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.text.KeyboardOptions
+
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
+
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
+
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
+
 
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -31,16 +27,17 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.text.input.PasswordVisualTransformation
+
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.fahad.auth_firebase.domain.model.Response
-import com.fahad.auth_firebase.domain.model.User
+
 import com.fahad.auth_firebase.ui.screen.compenets.DisplayError
 import com.fahad.auth_firebase.ui.screen.compenets.EmailAndPasswordInputs
-import com.fahad.auth_firebase.ui.screen.compenets.NavigationButton
+
+import com.fahad.auth_firebase.ui.screen.compenets.NavigationText
 
 
 import com.fahad.auth_firebase.util.Button.LoadingButton
@@ -56,62 +53,72 @@ fun LoginScreen(
 
     println("Register: loginResult = $loginResult")
 
-
-
-    Column(
+    Box(
         modifier = Modifier
-            .fillMaxWidth()
             .fillMaxSize()
-
             .padding(16.dp),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center
-
+        contentAlignment = Alignment.Center
     ) {
-        Text(
-            text = "welcome to the app",
-            color = MaterialTheme.colorScheme.primary,
-            fontSize = 30.sp,
-            fontWeight = FontWeight.Bold
+        Column(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Text(
+                text = "Welcome to the App",
+                color = MaterialTheme.colorScheme.primary,
+                fontSize = 30.sp,
+                fontWeight = FontWeight.Bold,
+                textAlign = TextAlign.Center
+            )
 
+            Text(
+                text = "Please log in to continue",
+                color = MaterialTheme.colorScheme.onBackground,
+                fontSize = 16.sp,
+                textAlign = TextAlign.Center,
+                modifier = Modifier.padding(top = 8.dp)
+            )
 
-        )
+            Spacer(modifier = Modifier.height(50.dp))
 
-        Spacer(modifier = Modifier.height(50.dp))
+            EmailAndPasswordInputs(
+                email = email,
+                onEmailChange = { email = it },
+                password = password,
+                onPasswordChange = { password = it },
+                isError = loginResult is Response.Failure,
+                showNameField = false,
+                name = "",
+                onNameChange = { },
+            )
 
-        EmailAndPasswordInputs(
-            email = email,
-            onEmailChange = { email = it },
-            password = password,
-            onPasswordChange = { password = it },
-            isError = loginResult is Response.Failure
-        )
+            // Display error message if loginResult is a failure
+            DisplayError(loginResult)
 
+            // Login Button
+            LoadingButton(
+                text = "Login", isLoading = loginViewModel.isLoading,
+                enabled = !(email.isBlank() || password.isBlank()),
+                textloading = "Login...",
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 16.dp),
+                onClick = {
+                    loginViewModel.login(email, password, navController)
+                },
+            )
 
-// Display error message if loginResult is a failure
-        DisplayError(loginResult)
-
-
-        // Login Button
-        LoadingButton(
-            text = "Login", isLoading = loginViewModel.isLoading,
-            enabled = !(email.isBlank() || password.isBlank()),
-            textloading = "login...",
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(top = 16.dp),
-
-
-            onClick = {
-                loginViewModel.login(email, password, navController)
-            },
-        )
-
-
-        // Navigation button to registration screen
-        NavigationButton(navController = navController)
+            // Navigation button to registration screen
+            NavigationText(
+                text = "Don't have an account? Register",
+                onClick = {
+                    navController.navigate("register")
+                }
+            )
+        }
     }
 }
+
 
 
 

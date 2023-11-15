@@ -37,7 +37,7 @@ fun AsyncImageProfile(photoUrl: String?) {
 
     Box(
         modifier = Modifier
-            .size(200.dp)
+            .size(180.dp)
             .clip(CircleShape)
             .background(MaterialTheme.colorScheme.primary)
             .border(2.dp, Color.White, CircleShape)

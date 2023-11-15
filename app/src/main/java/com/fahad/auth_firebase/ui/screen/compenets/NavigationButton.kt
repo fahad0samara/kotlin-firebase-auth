@@ -10,13 +10,16 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 
 @Composable
- fun NavigationButton(navController: NavController) {
+fun NavigationText(
+    text: String,
+    onClick: () -> Unit
+) {
     TextButton(
-        onClick = { navController.navigate("register") },
+        onClick = onClick,
         modifier = Modifier
             .fillMaxWidth()
-            .padding(top = 16.dp)
+            .padding(top = 8.dp)
     ) {
-        Text("Don't have an account? Register here")
+        Text(text)
     }
 }

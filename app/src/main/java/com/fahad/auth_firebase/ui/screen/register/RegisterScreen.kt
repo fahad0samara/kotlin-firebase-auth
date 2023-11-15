@@ -37,12 +37,18 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import coil.compose.rememberAsyncImagePainter
 import com.fahad.auth_firebase.domain.model.Response
+import com.fahad.auth_firebase.ui.screen.compenets.DisplayError
+import com.fahad.auth_firebase.ui.screen.compenets.EmailAndPasswordInputs
+import com.fahad.auth_firebase.ui.screen.compenets.NavigationText
 import com.fahad.auth_firebase.util.Button.LoadingButton
 import com.fahad.auth_firebase.util.image.AsyncImageProfile
 
@@ -57,10 +63,7 @@ fun RegisterScreen(
     var photoUri by rememberSaveable { mutableStateOf<Uri?>(null) }
     val registrationResult by registerViewModel.registrationState.collectAsState()
 
-
-    println(
-        "println $registrationResult"
-    )
+    println("println $registrationResult")
 
     // Get the result of the image picker
     val launcher = rememberLauncherForActivityResult(
@@ -69,127 +72,120 @@ fun RegisterScreen(
         photoUri = uri
     }
 
-    Column(
+    Box(
         modifier = Modifier
             .fillMaxSize()
-            .padding(16.dp),
-        verticalArrangement = Arrangement.Center,
-
+            .padding(12.dp),
+        contentAlignment = Alignment.Center
     ) {
-        // Center the image and show an icon if no image is selected
-        Box(
-            modifier = Modifier.fillMaxWidth(),
-            contentAlignment = Alignment.Center
-        ) {
-            // Display the selected image or show an icon
-            if (photoUri != null) {
-                AsyncImageProfile(photoUrl = photoUri.toString())
-            } else {
-                Icon(
-                    imageVector = Icons.Default.Person,
-                    contentDescription = "No photo selected",
-                    tint = MaterialTheme.colorScheme.primary,
-                    modifier = Modifier.size(80.dp).align(Alignment.Center).border(2.dp, Color.Yellow, CircleShape)
-                )
-            }
-        }
-
-        // Button to open the image picker
-        Row(
+        Column(
             modifier = Modifier
-                .fillMaxWidth()
-                .padding(top = 8.dp, bottom = 16.dp),
-            horizontalArrangement = Arrangement.Center
+                .fillMaxWidth(),
+
+            horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Button(
-                onClick = { launcher.launch("image/*") },
+            Text(
+                text = "Welcome to the Registration Page",
+                color = MaterialTheme.colorScheme.primary,
+                fontSize = 20.sp,
+                fontWeight = FontWeight.Bold,
+                textAlign = TextAlign.Center,
+                modifier = Modifier.padding(bottom = 8.dp)
+            )
 
-                modifier = Modifier.padding(16.dp)
+            Text(
+                text = "Please fill in the details below to create an account",
+                color = MaterialTheme.colorScheme.onBackground,
+                fontSize = 16.sp,
+                textAlign = TextAlign.Center,
+                modifier = Modifier.padding(bottom = 16.dp)
+            )
+
+            // Center the image and show an icon if no image is selected
+            Box(
+                modifier = Modifier.fillMaxWidth(),
+                contentAlignment = Alignment.Center
             ) {
-                Text("Select Photo")
-            }
-
-            // Button to clear the selected image
-            if (photoUri != null) {
-                Button(
-                    onClick = { photoUri = null },
-                    modifier = Modifier
-                        .padding(16.dp)
-                        .background(MaterialTheme.colorScheme.secondary, shape = CircleShape)
-                ) {
-                    Text("Clear")
+                // Display the selected image or show an icon
+                if (photoUri != null) {
+                    AsyncImageProfile(photoUrl = photoUri.toString())
+                } else {
+                    Icon(
+                        imageVector = Icons.Default.Person,
+                        contentDescription = "No photo selected",
+                        tint = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier
+                            .size(80.dp)
+                            .align(Alignment.Center)
+                            .border(2.dp, Color.Yellow, CircleShape)
+                    )
                 }
             }
-        }
 
-        // Name Input
-        OutlinedTextField(
-            keyboardOptions = KeyboardOptions(
-                keyboardType = KeyboardType.Text
-            ),
-            isError = registrationResult is Response.Failure,
-            value = name,
-            onValueChange = { name = it },
-            label = { Text("Name") },
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(0.dp, 0.dp, 0.dp, 16.dp)
-        )
+            // Button to open the image picker
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(bottom = 2.dp),
+                horizontalArrangement = Arrangement.Center
+            ) {
+                Button(
+                    onClick = { launcher.launch("image/*") },
+                    modifier = Modifier.padding(8.dp)
+                ) {
+                    Text("Select Photo")
+                }
 
-        // Email Input
-        OutlinedTextField(
-            keyboardOptions = KeyboardOptions(
-                keyboardType = KeyboardType.Email
-            ),
-            isError = registrationResult is Response.Failure,
-            value = email,
-            onValueChange = { email = it },
-            label = { Text("Email") },
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(0.dp, 0.dp, 0.dp, 16.dp)
-        )
+                // Button to clear the selected image
+                if (photoUri != null) {
+                    Button(
+                        onClick = { photoUri = null },
+                        modifier = Modifier
+                            .padding(8.dp)
+                            .background(MaterialTheme.colorScheme.secondary, shape = CircleShape)
+                    ) {
+                        Text("Clear")
+                    }
+                }
+            }
 
-        // Password Input
-        OutlinedTextField(
-            keyboardOptions = KeyboardOptions(
-                keyboardType = KeyboardType.Password
-            ),
-            isError = registrationResult is Response.Failure,
-            value = password,
-            onValueChange = { password = it },
-            label = { Text("Password") },
-            visualTransformation = PasswordVisualTransformation(),
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(0.dp, 0.dp, 0.dp, 16.dp)
-        )
+            EmailAndPasswordInputs(
+                name = name,
+                onNameChange = { name = it },
+                email = email,
+                onEmailChange = { email = it },
+                password = password,
+                onPasswordChange = { password = it },
+                isError = registrationResult is Response.Failure,
+                showNameField = true
+            )
 
-        // Spacer to create some space between input fields and button
-        Spacer(modifier = Modifier.height(16.dp))
+            // Spacer to create some space between input fields and button
+            Spacer(modifier = Modifier.height(16.dp))
 
-        // Display error message if loginResult is a failure
-        if (registrationResult is Response.Failure) {
-            val error = (registrationResult as Response.Failure).exception
-            Log.d("RegisterScreen", "Registration failed: ${error.message}")
-            Text(
-                text = "Registration failed: ${error.message}",
-                color = Color.Red,
-                modifier = Modifier.padding(0.dp, 0.dp, 0.dp, 16.dp)
+            // Display error message if registrationResult is a failure
+            DisplayError(registrationResult)
+
+            // Register Button
+            LoadingButton(
+                text = "Register",
+                isLoading = registerViewModel.isLoading,
+                enabled = !(email.isBlank() || password.isBlank() || name.isBlank() || photoUri == null),
+                textloading = "Registering...",
+                onClick = {
+                    registerViewModel.registerUser(email, password, name, photoUri.toString(), navController)
+                }
+            )
+            NavigationText(
+                text = "Already have an account? Login",
+                onClick = {
+                    navController.navigate("login")
+                }
             )
         }
-        // Register Button
-        LoadingButton(
-            text = "Register",
-            isLoading = registerViewModel.isLoading,
-            enabled = !(email.isBlank() || password.isBlank() || name.isBlank() || photoUri == null),
-            textloading = "Registering...",
-            onClick = {
-                registerViewModel.registerUser(email, password, name, photoUri.toString(), navController)
-            }
-        )
     }
 }
+
 
 
 

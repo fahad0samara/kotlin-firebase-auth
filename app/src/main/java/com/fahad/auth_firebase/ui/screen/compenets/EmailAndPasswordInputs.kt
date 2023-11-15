@@ -14,12 +14,35 @@ import androidx.compose.ui.unit.dp
 
 @Composable
 fun EmailAndPasswordInputs(
+    showNameField: Boolean,
+    name:String,
+    onNameChange:(String) -> Unit,
     email: String,
     onEmailChange: (String) -> Unit,
     password: String,
     onPasswordChange: (String) -> Unit,
     isError: Boolean
 ) {
+    if (showNameField) {
+
+        OutlinedTextField(
+            keyboardOptions = KeyboardOptions(
+                keyboardType = KeyboardType.Text
+            ),
+            isError = isError,
+            value = name,
+            onValueChange = onNameChange,
+            label = { Text("Name") },
+
+
+            shape = MaterialTheme.shapes.large,
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(0.dp, 16.dp, 0.dp, 0.dp)
+        )
+    }
+
+
     OutlinedTextField(
         keyboardOptions = KeyboardOptions(
             keyboardType = KeyboardType.Email
@@ -46,4 +69,8 @@ fun EmailAndPasswordInputs(
             .fillMaxWidth()
             .padding(0.dp, 16.dp, 0.dp, 0.dp)
     )
+
+
+
+
 }
