@@ -46,6 +46,7 @@ class UserDataViewModel @Inject constructor(private val authRepository: AuthRepo
 
 
     fun getUserData() {
+
         viewModelScope.launch {
             val response = authRepository.getUserData()
             if (response is Response.Success) {

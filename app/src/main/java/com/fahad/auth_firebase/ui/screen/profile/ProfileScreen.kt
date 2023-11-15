@@ -24,6 +24,7 @@ import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -38,18 +39,27 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.ContentScale.Companion.Crop
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
+import coil.compose.AsyncImagePainter
+import coil.compose.ImagePainter
 import coil.compose.rememberAsyncImagePainter
 import com.fahad.auth_firebase.ui.UserDataViewModel
 import com.fahad.auth_firebase.util.Button.LoadingButton
 import com.fahad.auth_firebase.util.Button.SnackbarWrapperProfile
 
+import coil.compose.rememberImagePainter
+import coil.request.ImageRequest
+import coil.size.Scale
+import coil.transform.CircleCropTransformation
 
 @Composable
 fun ProfileScreen(
@@ -66,6 +76,9 @@ fun ProfileScreen(
     val isEmailVerified by userDataViewModel.isEmailVerified.collectAsState()
 
     val largeRadialGradient = MaterialTheme.colorScheme.background.copy(alpha = 0.1f)
+
+
+
 
     Box(
         modifier = Modifier
@@ -112,14 +125,12 @@ fun ProfileScreen(
                     .border(2.dp, Color.White, CircleShape)
                     .padding(5.dp)
             ) {
-                Image(
-                    painter = rememberAsyncImagePainter(model = photoUrl),
-                    contentDescription = "User Image",
-                    modifier = Modifier
-                        .size(200.dp)
-                        .clip(CircleShape),
-                    contentScale = Crop
-                )
+                UserProfileImage(photoUrl = photoUrl)
+
+
+
+
+
             }
 
             Spacer(modifier = Modifier.height(8.dp))
@@ -131,59 +142,11 @@ fun ProfileScreen(
             ) {
 
 
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    modifier = Modifier
-                        .background(
-                            MaterialTheme.colorScheme.onSurface.copy(alpha = 0.2f),
-                            shape = RoundedCornerShape(20.dp)
-                        )
-                        .padding(10.dp)
-
-
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.Person,
-                        contentDescription = null,
-                        tint = MaterialTheme.colorScheme.onSurface.copy(alpha = 1f)
-                    )
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Text(
-                        text = displayName ?: "",
-                        fontWeight = FontWeight.Bold,
-                        fontSize = 15.sp,
-                        fontFamily = FontFamily.Monospace,
-                        color = MaterialTheme.colorScheme.onSurface
-                    )
-                }
+                UserInfoRow(icon = Icons.Default.Person, text = displayName ?: "")
 
                 Spacer(modifier = Modifier.height(8.dp))
 
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    modifier = Modifier
-                        .background(
-                            MaterialTheme.colorScheme.onSurface.copy(alpha = 0.2f),
-                            shape = RoundedCornerShape(15.dp)
-                        )
-                        .padding(10.dp)
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.Email,
-                        contentDescription = null,
-                        tint = MaterialTheme.colorScheme.onSurface.copy(alpha = 1f)
-                    )
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Text(
-                        text = email ?: "",
-                        fontWeight = FontWeight.Bold,
-                        fontSize = 15.sp,
-                        fontFamily = FontFamily.Monospace,
-                        color = MaterialTheme.colorScheme.onSurface
-                    )
-                }
+                UserInfoRow(icon = Icons.Default.Email, text = email ?: "")
             }
 
             Spacer(modifier = Modifier.height(16.dp))
@@ -222,6 +185,37 @@ fun ProfileScreen(
 
     )
 }
+
+
+@Composable
+fun UserInfoRow(icon: ImageVector, text: String) {
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.SpaceBetween,
+        modifier = Modifier
+            .background(
+                MaterialTheme.colorScheme.onSurface.copy(alpha = 0.2f),
+                shape = RoundedCornerShape(20.dp)
+            )
+            .padding(10.dp)
+    ) {
+        Icon(
+            imageVector = icon,
+            contentDescription = null,
+            tint = MaterialTheme.colorScheme.onSurface.copy(alpha = 1f)
+        )
+        Spacer(modifier = Modifier.width(8.dp))
+        Text(
+            text = text,
+            fontWeight = FontWeight.Bold,
+            fontSize = 15.sp,
+            fontFamily = FontFamily.Monospace,
+            color = MaterialTheme.colorScheme.onSurface
+        )
+    }
+}
+
+
 
 
 @Composable
@@ -279,7 +273,38 @@ fun VerifyEmailCard(
     }
 }
 
+@Composable
+fun UserProfileImage(photoUrl: String?) {
+    Box(
+        modifier = Modifier
+            .size(200.dp)
+            .clip(CircleShape)
+    ) {
+        val painter = rememberAsyncImagePainter(
+            ImageRequest.Builder(LocalContext.current).data(data = photoUrl).apply(block = fun ImageRequest.Builder.() {
+                crossfade(true)
+                transformations(CircleCropTransformation())
+                scale(Scale.FILL)
+            }).build()
+        )
 
+        Image(
+            painter = painter,
+            contentDescription = "User Image",
+            modifier = Modifier.fillMaxSize(),
+            contentScale = ContentScale.Crop
+        )
+
+        // Show loading indicator while the image is loading
+        if (painter.state is AsyncImagePainter.State.Loading) {
+            CircularProgressIndicator(
+                modifier = Modifier
+                    .size(40.dp)
+                    .align(Alignment.Center)
+            )
+        }
+    }
+}
 
 
 
