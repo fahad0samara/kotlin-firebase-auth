@@ -31,6 +31,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -89,49 +92,15 @@ fun ProfileScreen(
             verticalArrangement = Arrangement.Top
         ) {
             if (!isEmailVerified) {
-                Card(
+
+                VerifyEmailCard(
+                    isLoading = isLoading,
+                    onVerifyEmailClicked = userDataViewModel::markEmailAsVerified,
+
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(8.dp),
-                ) {
-                    Column(
-                        modifier = Modifier.padding(8.dp),
-                        horizontalAlignment = Alignment.CenterHorizontally
-                    ) {
-
-
-                        Text(
-                            text = "Verify your email to get full access" + "so check your email and click on the link to verify your email" + "if you didn't get any email click on the button to resend the email",
-
-                            fontSize = 12.sp,
-                            color = Color.White,
-                            textAlign = TextAlign.Center,
-                            fontWeight = FontWeight.Bold,
-
-                            )
-                        Spacer(modifier = Modifier.height(4.dp))
-
-
-                        LoadingButton(
-                            isLoading = isLoading,
-                            text = "Verify Email",
-
-                            onClick = {
-                                userDataViewModel.markEmailAsVerified()
-                            },
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .height(50.dp),
-                            enabled = true,
-                            textloading = "we check your email"
-
-                        )
-
-
-                    }
-
-
-                }
+                        .padding(8.dp)
+                )
 
 
             }
@@ -248,18 +217,67 @@ fun ProfileScreen(
     }
 
     SnackbarWrapperProfile(
-        success = success,
-        error = error,
-        onDismiss = {
-            userDataViewModel.clearMessages()
+        success = success, error = error, onDismiss = userDataViewModel::clearMessages
 
 
-        }
     )
 }
 
 
+@Composable
+fun VerifyEmailCard(
+    isLoading: Boolean,
+    onVerifyEmailClicked: () -> Unit,
+    modifier: Modifier = Modifier,
 
+    ) {
+    var isButtonClicked by remember { mutableStateOf(false) }
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(8.dp),
+    ) {
+        Column(
+            modifier = Modifier.padding(8.dp), horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+
+            Text(
+                if (isButtonClicked) "if you have already verified your email, please sign out and sign in again or click on already verified button below"
+                else "Verify your email to get full access.Check your email and click on the link to verify your email",
+
+
+                modifier = Modifier.padding(8.dp),
+
+                fontSize = 12.sp,
+                color = Color.White,
+                textAlign = TextAlign.Center,
+                fontWeight = FontWeight.Bold,
+            )
+
+            Spacer(modifier = Modifier.height(4.dp))
+
+
+            LoadingButton(
+                isLoading = isLoading,
+                text = if (isButtonClicked) "already verified"
+                else "Verify Email",
+                onClick = {
+                    isButtonClicked = true
+                    onVerifyEmailClicked()
+                },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(50.dp),
+                enabled = !isLoading,
+                textloading = "Verifying email..."
+            )
+
+
+        }
+
+
+    }
+}
 
 
 

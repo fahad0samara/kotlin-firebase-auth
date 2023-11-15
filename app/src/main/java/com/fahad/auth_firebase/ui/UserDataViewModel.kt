@@ -65,8 +65,17 @@ class UserDataViewModel @Inject constructor(private val authRepository: AuthRepo
 
         viewModelScope.launch {
             try {
+
                 val response = authRepository.markEmailAsVerified()
-                handleResponse(response)
+                if (response is Response.Success) {
+                    _profileSuccess.value = "Email marked as verified"
+                    _isEmailVerified.value = true
+                } else if (response is Response.Failure) {
+                    _profileError.value =
+                        "Failed to mark email as verified: ${response.exception.message}"
+                }
+
+
 
             } catch (e: Exception) {
                 _profileError.value = "Failed to mark email as verified: ${e.message}"
@@ -137,13 +146,6 @@ class UserDataViewModel @Inject constructor(private val authRepository: AuthRepo
     }
 
 
-    private fun handleResponse(response: Response<*>) {
-        when (response) {
-            is Response.Success -> _editProfileSuccess.value = "Success: ${response.data}"
-            is Response.Failure -> _profileError.value = "Error: ${response.exception.message}"
-            else -> _profileError.value = "Error: Unknown error"
-        }
-    }
 
     fun logout() {
         viewModelScope.launch {
